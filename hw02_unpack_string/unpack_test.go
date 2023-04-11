@@ -44,7 +44,6 @@ func TestUnpackInvalidString(t *testing.T) {
 	}
 }
 
-/*Rus Test*/
 func TestUnpackRus(t *testing.T) {
 	tests := []struct {
 		input    string
