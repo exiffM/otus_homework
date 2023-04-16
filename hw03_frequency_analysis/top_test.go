@@ -7,7 +7,7 @@ import (
 )
 
 // Change to true if needed.
-var taskWithAsteriskIsCompleted = false
+var taskWithAsteriskIsCompleted = true
 
 var text = `Как видите, он  спускается  по  лестнице  вслед  за  своим
 	другом   Кристофером   Робином,   головой   вниз,  пересчитывая
@@ -43,9 +43,67 @@ var text = `Как видите, он  спускается  по  лестни�
 	посидеть у огня и послушать какую-нибудь интересную сказку.
 		В этот вечер...`
 
+var strangeSymbolsText = `one! two@ three# four$ five& six* seven( eight) nine- ten+ eleven= twelve/
+	thirteen" fourteen[ fiveteen] sixteen{ seventeen} eighteen/ nineteen' one! two@ three# four$
+	one! two@ three# four$ one! two@ three# four$ five& six* seven( eight) nine- ten+ eleven= twelve/
+	five& six* seven( eight) nine- ten+ eleven= twelve/ five& six* seven( eight) nine- ten+ eleven= twelve/
+	five& six* seven( eight) nine- ten+ eleven= twelve/ thirteen" fourteen[ fiveteen] sixteen{`
+
+var lexicographicalText = `one two three four five six seven eight nine ten
+	one two three four five six seven eight nine ten
+	one two three four five six seven eight nine ten
+	one two three four five six seven eight nine ten
+	one two three four five six seven eight nine ten
+	one two three four five six seven eight nine ten
+	one two three four five six seven eight nine ten`
+
 func TestTop10(t *testing.T) {
 	t.Run("no words in empty string", func(t *testing.T) {
 		require.Len(t, Top10(""), 0)
+	})
+
+	t.Run("Less than 10 words", func(t *testing.T) {
+		expected := []string{
+			"one",
+			"two",
+			"three",
+			"five",
+			"four",
+			"seven",
+		}
+		require.Equal(t, expected, Top10("One one two oNe two three thrEe seVen five FivE TwO four Four two one three"))
+	})
+
+	t.Run("Strange symbols after words", func(t *testing.T) {
+		expected := []string{
+			"eight",
+			"eleven",
+			"five",
+			"nine",
+			"seven",
+			"six",
+			"ten",
+			"twelve",
+			"four",
+			"one",
+		}
+		require.Equal(t, expected, Top10(strangeSymbolsText))
+	})
+
+	t.Run("Lexicographical order", func(t *testing.T) {
+		expected := []string{
+			"eight",
+			"five",
+			"four",
+			"nine",
+			"one",
+			"seven",
+			"six",
+			"ten",
+			"three",
+			"two",
+		}
+		require.Equal(t, expected, Top10(lexicographicalText))
 	})
 
 	t.Run("positive test", func(t *testing.T) {
