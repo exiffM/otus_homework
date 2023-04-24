@@ -14,6 +14,26 @@ func TestList(t *testing.T) {
 		require.Nil(t, l.Front())
 		require.Nil(t, l.Back())
 	})
+	// Test for full coverage
+	t.Run("first pushing back", func(t *testing.T) {
+		lst := NewList()
+
+		lst.PushBack(100)              // [100]
+		lst.PushBack(50)               // [100, 50]
+		lst.PushFront(15)              // [15, 100, 50]
+		prelastItem := lst.Back().Prev // 100
+
+		lst.PushFront(90) // [90, 15, 100, 50]
+		lst.PushBack(27)  // [90, 15, 100, 50, 15]
+		require.Equal(t, 5, lst.Len())
+		require.Equal(t, 100, prelastItem.Value)
+
+		lst.MoveToFront(prelastItem) // [100, 90, 15, 50, 15]
+		require.Equal(t, prelastItem.Value, lst.Front().Value)
+
+		lst.Remove(lst.Front()) // [90, 15, 50, 15]
+		require.Equal(t, 90, lst.Front().Value)
+	})
 
 	t.Run("complex", func(t *testing.T) {
 		l := NewList()
