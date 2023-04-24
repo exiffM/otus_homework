@@ -16,7 +16,7 @@ type lruCache struct {
 	items    map[Key]*ListItem
 	keyItems map[Key]*ListItem
 	keys     List
-	mutex    sync.Mutex
+	mutex    sync.RWMutex
 }
 
 func (cache *lruCache) Set(key Key, value interface{}) bool {
@@ -44,14 +44,14 @@ func (cache *lruCache) Set(key Key, value interface{}) bool {
 }
 
 func (cache *lruCache) Get(key Key) (interface{}, bool) {
-	cache.mutex.Lock()
+	cache.mutex.RLock()
 	if _, ok := cache.items[key]; ok {
 		cache.queue.MoveToFront(cache.items[key])
 		cache.keys.MoveToFront(cache.keyItems[key])
-		cache.mutex.Unlock()
+		cache.mutex.RUnlock()
 		return cache.items[key].Value, true
 	}
-	cache.mutex.Unlock()
+	cache.mutex.RUnlock()
 	return nil, false
 }
 
