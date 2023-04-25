@@ -16,16 +16,16 @@ type lruCache struct {
 	items    map[Key]*ListItem
 	keyItems map[Key]*ListItem
 	keys     List
-	mutex    sync.RWMutex
+	mutex    sync.Mutex
 }
 
 func (cache *lruCache) Set(key Key, value interface{}) bool {
 	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
 	if _, ok := cache.items[key]; ok {
 		cache.items[key].Value = value
 		cache.queue.MoveToFront(cache.items[key])
 		cache.keys.MoveToFront(cache.keyItems[key])
-		cache.mutex.Unlock()
 		return true
 	}
 	if cache.queue.Len() < cache.capacity {
@@ -39,30 +39,28 @@ func (cache *lruCache) Set(key Key, value interface{}) bool {
 		cache.items[key] = cache.queue.PushFront(value)
 		cache.keyItems[key] = cache.keys.PushFront(key)
 	}
-	cache.mutex.Unlock()
 	return false
 }
 
 func (cache *lruCache) Get(key Key) (interface{}, bool) {
-	cache.mutex.RLock()
+	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
 	if _, ok := cache.items[key]; ok {
 		cache.queue.MoveToFront(cache.items[key])
 		cache.keys.MoveToFront(cache.keyItems[key])
-		cache.mutex.RUnlock()
 		return cache.items[key].Value, true
 	}
-	cache.mutex.RUnlock()
 	return nil, false
 }
 
 func (cache *lruCache) Clear() {
 	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
 	cache.capacity = 0
 	cache.queue = nil
 	cache.keys = nil
 	cache.items = nil
 	cache.keyItems = nil
-	cache.mutex.Unlock()
 }
 
 func NewCache(capacity int) Cache {
