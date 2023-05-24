@@ -43,10 +43,9 @@ func TestRun(t *testing.T) {
 		tasks := make([]Task, 0, tasksCount)
 
 		var runTasksCount int32
-		var timeDuration time.Duration = time.Millisecond * 100
+		duration := time.Millisecond * 100
 
 		for i := 0; i < tasksCount; i++ {
-
 			tasks = append(tasks, func() error {
 				atomic.AddInt32(&runTasksCount, 1)
 				return nil
@@ -60,7 +59,7 @@ func TestRun(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
-		require.Eventually(t, func() bool { return true }, timeDuration, timeDuration/2, "tasks were run sequentially?")
+		require.Eventually(t, func() bool { return true }, duration, duration/2, "tasks were run sequentially?")
 	})
 
 	t.Run("execution with 0 available errors", func(t *testing.T) {
