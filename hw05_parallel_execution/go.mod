@@ -1,4 +1,4 @@
-module github.com/fixme_my_friend/hw05_parallel_execution
+module github.com/exiffM/otus_homework/hw05_parallel_execution
 
 go 1.19
 
