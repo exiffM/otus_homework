@@ -126,4 +126,26 @@ func TestRun(t *testing.T) {
 		require.Equal(t, errorTasksCount, int32(tasksCount/2), "some of error tasks didn't complete")
 		require.Equal(t, successTasksCount, int32(tasksCount/2), "some of success tasks didn't complete")
 	})
+
+	t.Run("cathing invalid argument", func(t *testing.T) {
+		tasksCount := 50
+		tasks := make([]Task, 0, tasksCount)
+
+		var runTasksCount int32
+
+		for i := 0; i < tasksCount; i++ {
+			tasks = append(tasks, func() error {
+				time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+				atomic.AddInt32(&runTasksCount, 1)
+				return nil
+			})
+		}
+
+		workersCount := 5
+		maxErrorsCount := -2
+
+		err := Run(tasks, workersCount, maxErrorsCount)
+
+		require.Truef(t, errors.Is(err, ErrInvalidArgument), "actual err - %v", err)
+	})
 }

@@ -5,7 +5,10 @@ import (
 	"sync"
 )
 
-var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
+var (
+	ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
+	ErrInvalidArgument     = errors.New("invalid argument")
+)
 
 type Task func() error
 
@@ -32,9 +35,9 @@ func Run(tasks []Task, n, m int) error {
 	wg.Add(n)
 	taskChan := make(chan Task, len(tasks))
 	errorCounter := safeCounter{}
-	switch m {
+	switch {
 	// Случай игнорирования ошибок
-	case -1:
+	case m == -1:
 		executor := func() {
 			defer wg.Done()
 			for task := range taskChan {
@@ -50,10 +53,10 @@ func Run(tasks []Task, n, m int) error {
 		close(taskChan)
 		wg.Wait()
 	// Случай когда должно быть 0 ошибок
-	case 0:
+	case m == 0:
 		return ErrErrorsLimitExceeded
 	// Общий случай при m > 0
-	default:
+	case m > 0:
 		executor := func() {
 			defer wg.Done()
 			for task := range taskChan {
@@ -75,6 +78,8 @@ func Run(tasks []Task, n, m int) error {
 		if errorCounter.counter == m {
 			return ErrErrorsLimitExceeded
 		}
+	default:
+		return ErrInvalidArgument
 	}
 	return nil
 }
