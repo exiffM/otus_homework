@@ -8,50 +8,76 @@ type (
 
 type Stage func(in In) (out Out)
 
+// func executeStage(in Bi, done In, s Stage) Bi {
+// 	out := make(Bi)
+// 	go func() {
+// 		defer close(out)
+// 		out <- s(in)
+// 	}()
+// 	return out
+// }
+
 func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	// Place your code here.
-
-	// Первый вариант
-	// out := make(Bi, len(stages))
-	// go func() {
-	// 	defer close(out)
-	// 	for _, stage := range stages {
-	// 		out <- stage(in)
-	// 	}
-	// }()
-
-	// Второй вариант
-	// out := make(Bi, len(stages))
-	// stageIn := make(Bi)
-	// go func() {
-	// 	defer close(stageIn)
-	// 	for data := range in {
-	// 		stageIn <- data
-	// 	}
-	// }()
-
-	// go func() {
-	// 	defer close(out)
-	// 	for _, stage := range stages {
-	// 		out <- stage(stageIn)
-	// 	}
-	// }()
-
-	// Третий вариант
-	// out := make(Bi, len(stages))
-	// stageIn := make(Bi)
-	// go func() {
-	// 	defer close(stageIn)
-	// 	for data := range in {
-	// 		stageIn <- data
-	// 	}
-	// }()
-
-	//
-	// 	defer close(out)
-	// 	for _, stage := range stages {
-	// 		out <- stage(stageIn)
-	// 	}
-
+	out := make(Bi)
+	go func() {
+		defer close(out)
+		newIn := in
+		for _, stage := range stages {
+			newIn = stage(newIn)
+		}
+		result := <-newIn
+		out <- result
+	}()
 	return out
+	// for {
+	// 	select {
+	// 	case <-done:
+	// 		return nil
+	// 	default:
+	// 		go func() {
+	// 			defer close(out)
+	// 			newIn := in
+	// 			for _, stage := range stages {
+	// 				newIn = stage(newIn)
+	// 			}
+	// 			result := <-newIn
+	// 			out <- result
+	// 		}()
+	// 		return out
+	// 	}
+	// }
+
+	// go func() {
+	// 	for data := range in {
+	// 		testChan := make(Bi)
+	// 		go func() {
+	// 			defer close(testChan)
+	// 			testChan <- data
+	// 		}()
+	// 		nOut := make(Out)
+	// 		for _, stage := range stages {
+	// 			nOut = stage(testChan)
+	// 			testChan = nOut
+	// 		}
+	// 		result := <-nOut
+	// 		out <- result
+	// 	}
+	// }()
+	// for {
+	// 	select {
+	// 	case <-done:
+	// 		return
+	// 	case data := <-in:
+	// 		newIn := make(Bi)
+	// 		newIn <- data
+	// 		for _, stage := range stages {
+	// 			newIn = executeStage(newIn, done, stage)
+	// 		}
+	// 		result := <-newIn
+	// 		close(newIn)
+	// 		out <- result
+	// 	}
+	// }
+
 }
