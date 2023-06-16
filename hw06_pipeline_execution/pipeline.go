@@ -8,77 +8,32 @@ type (
 
 type Stage func(in In) (out Out)
 
-func executeStage(in In, done In, s Stage) Bi {
+func executeStage(in In, done In) Bi {
 	out := make(Bi)
 	go func() {
 		defer close(out)
-		out <- s(in)
+		for {
+			select {
+			case <-done:
+				return
+			case data, ok := <-in:
+				if !ok {
+					return
+				}
+				out <- data
+			}
+		}
 	}()
 	return out
 }
 
 func ExecutePipeline(in In, done In, stages ...Stage) Out {
-	// Place your code here.
-	out := make(Bi)
+	newIn := in
+	for _, stage := range stages {
+		stageChan := stage(newIn)
+		resultChan := executeStage(stageChan, done)
 
-	go func() {
-		defer close(out)
-		newIn := in
-		for _, stage := range stages {
-			newIn = executeStage(newIn, done, stage)
-		}
-		result := <-newIn
-		out <- result
-	}()
-	return out
-	// for {
-	// 	select {
-	// 	case <-done:
-	// 		return nil
-	// 	default:
-	// 		go func() {
-	// 			defer close(out)
-	// 			newIn := in
-	// 			for _, stage := range stages {
-	// 				newIn = stage(newIn)
-	// 			}
-	// 			result := <-newIn
-	// 			out <- result
-	// 		}()
-	// 		return out
-	// 	}
-	// }
-
-	// go func() {
-	// 	for data := range in {
-	// 		testChan := make(Bi)
-	// 		go func() {
-	// 			defer close(testChan)
-	// 			testChan <- data
-	// 		}()
-	// 		nOut := make(Out)
-	// 		for _, stage := range stages {
-	// 			nOut = stage(testChan)
-	// 			testChan = nOut
-	// 		}
-	// 		result := <-nOut
-	// 		out <- result
-	// 	}
-	// }()
-	// for {
-	// 	select {
-	// 	case <-done:
-	// 		return
-	// 	case data := <-in:
-	// 		newIn := make(Bi)
-	// 		newIn <- data
-	// 		for _, stage := range stages {
-	// 			newIn = executeStage(newIn, done, stage)
-	// 		}
-	// 		result := <-newIn
-	// 		close(newIn)
-	// 		out <- result
-	// 	}
-	// }
-
+		newIn = resultChan
+	}
+	return newIn
 }
