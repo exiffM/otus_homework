@@ -91,3 +91,66 @@ func TestPipeline(t *testing.T) {
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
 }
+
+func TestPipelineVarStagesDifficulty(t *testing.T) {
+	// Stage generator
+	g := func(_ string, f func(v interface{}) interface{}) Stage {
+		return func(in In) Out {
+			out := make(Bi)
+			go func() {
+				defer close(out)
+				for v := range in {
+					out <- f(v)
+				}
+			}()
+			return out
+		}
+	}
+
+	stages := []Stage{
+		g("Medium", func(v interface{}) interface{} {
+			time.Sleep(time.Millisecond * 300)
+			for i := 0; i < 80; i++ {
+				temp := v.(int)
+				temp += i * 13
+				v = temp
+			}
+			return v
+		}),
+		g("Easy", func(v interface{}) interface{} {
+			time.Sleep(time.Millisecond * 100)
+			return v.(int) * 2
+		}),
+		g("Hard", func(v interface{}) interface{} {
+			time.Sleep(time.Millisecond * 500)
+			for i := 0; i < 150; i++ {
+				temp := v.(int)
+				temp += i
+				v = temp
+				time.Sleep(time.Microsecond * 500)
+			}
+			return v.(int) + 100
+		}),
+	}
+
+	t.Run("different difficulty of stages", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(in)
+		}()
+
+		start := time.Now()
+		for s := range ExecutePipeline(in, nil, stages...) {
+			_ = s
+		}
+		elapsed := time.Since(start).Milliseconds()
+		// Execution time between 4.8 and 5 seconds
+		require.Less(t, int(elapsed), len(data)*int(time.Second))
+		require.Greater(t, float64(elapsed), float64(4.8))
+	})
+}
