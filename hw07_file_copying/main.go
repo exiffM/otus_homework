@@ -24,6 +24,6 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {
-		fmt.Println("File copied successfuly!")
+		fmt.Println("File has been copied successfully!")
 	}
 }

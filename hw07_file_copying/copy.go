@@ -4,6 +4,8 @@ import (
 	"errors"
 	"io"
 	"os"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 var (
@@ -16,11 +18,8 @@ var (
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
 )
 
-// limit = 0 - whole file, limit > file size is ok
-// offset <= fileSize
 func Copy(fromPath, toPath string, offset, limit int64) error {
 	info, err := os.Stat(fromPath)
-	// check if file path is empty
 	switch {
 	case err != nil || info.IsDir():
 		return ErrUnsupportedFile
@@ -37,11 +36,19 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	case offset > info.Size():
 		return ErrOffsetExceedsFileSize
 	default:
+		if limit == 0 || limit > info.Size() {
+			limit = info.Size()
+		} else if offset > 0 && offset+limit > info.Size() {
+			limit = info.Size() - offset
+		}
 		inputFile, err := os.Open(fromPath)
 		defer inputFile.Close()
 		if err != nil {
 			return err
 		}
+
+		progress := pb.Simple.Start64(limit)
+		progressReader := progress.NewProxyReader(inputFile)
 
 		outputFile, err := os.Create(toPath)
 		defer outputFile.Close()
@@ -51,16 +58,8 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 		inputFile.Seek(offset, io.SeekStart)
 
-		if limit == 0 || limit > info.Size() {
-			_, err := io.Copy(outputFile, inputFile)
-			return err
-		} else {
-			_, err := io.CopyN(outputFile, inputFile, limit)
-			if err == io.EOF {
-				return nil
-			} else {
-				return err
-			}
-		}
+		n, err := io.CopyN(outputFile, progressReader, limit)
+		_ = n
+		return err
 	}
 }

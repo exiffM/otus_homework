@@ -16,6 +16,7 @@ linters-settings:
         allow:
          - $gostd
          - github.com/stretchr
+         - github.com/cheggaaa
 
 issues:
   exclude-rules:
