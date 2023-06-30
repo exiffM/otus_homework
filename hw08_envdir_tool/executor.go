@@ -1,13 +1,14 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 )
 
 // RunCmd runs a command + arguments (cmd) with environment variables from env.
 func RunCmd(cmd []string, env Environment) (returnCode int) {
-	proc := exec.Command(cmd[0], cmd[1:]...)
+	proc := exec.Command(cmd[0], cmd[1:]...) // #nosec G204
 
 	for key, val := range env {
 		if !val.NeedRemove {
@@ -22,8 +23,10 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	proc.Stderr = os.Stderr
 
 	err := proc.Run()
-	if exitErr, ok := err.(*exec.ExitError); ok {
-		returnCode = exitErr.ExitCode()
+
+	var errExit *exec.ExitError
+	if errors.As(err, &errExit) {
+		returnCode = errExit.ExitCode()
 	}
 	return
 }

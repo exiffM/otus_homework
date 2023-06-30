@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"testing"
@@ -15,8 +16,9 @@ func TestRunCmd(t *testing.T) {
 			"HELLO=\"hello\"")
 		err := cmd.Run()
 		expectedCode := 0
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			expectedCode = exitErr.ExitCode()
+		var errExit *exec.ExitError
+		if errors.As(err, &errExit) {
+			expectedCode = errExit.ExitCode()
 		}
 		env, err := ReadDir("testdata/env")
 		if err != nil {
