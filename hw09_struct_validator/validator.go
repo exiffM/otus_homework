@@ -152,9 +152,9 @@ func Validate(v interface{}) (string, error) {
 
 	for _, field := range fieldsList {
 		if param, ok := field.Tag.Lookup("validate"); ok {
-			switch field.Type.Kind() {
+			switch field.Type.Kind() { //nolint:all
 			case reflect.Slice:
-				switch field.Type.Elem().Kind() {
+				switch field.Type.Elem().Kind() { //nolint:all
 				case reflect.Int:
 					slice := rv.FieldByName(field.Name).Interface().([]int)
 					for _, elem := range slice {
