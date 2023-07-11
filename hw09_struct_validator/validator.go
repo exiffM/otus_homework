@@ -13,23 +13,6 @@ type ValidationError struct {
 	Err   error
 }
 
-// type SafeErrors struct {
-// 	globalVe ValidationErrors
-// 	m        sync.RWMutex
-// }
-
-// func (se *SafeErrors) Assign(ve ValidationErrors) {
-// 	se.m.Lock()
-// 	se.globalVe = ve
-// 	se.m.Unlock()
-// }
-
-// func (se *SafeErrors) Show() ValidationErrors {
-// 	se.m.RLock()
-// 	defer se.m.RUnlock()
-// 	return se.globalVe
-// }
-
 var (
 	// global errors.
 	errInvalidType = errors.New("inserted argument is not a struct")
@@ -40,13 +23,23 @@ var (
 	errRegexpKey   = errors.New("invalid key value, key regexp")
 	errInvelidTag  = errors.New("invalid validate tag")
 	// validation errors.
-	errValidationError = errors.New("validation completed with errors")
+	errValidationMinError     = errors.New("invalid value, ocured value is less than min")
+	errValidationMaxError     = errors.New("invalid value, ocured value is greater than max")
+	errValidationInError      = errors.New("invalid value, value is not in \"in\" list")
+	errValidationRegexpError  = errors.New("invalid value, value's length is greater than len")
+	errValidationLenError     = errors.New("invalid value, value doesn't match regular expression")
+	errValidationUnknownType  = errors.New("unknown field type")
+	errValidationUnknownSlice = errors.New("unknown slice field type")
 )
 
 type ValidationErrors []ValidationError
 
 func (v ValidationErrors) Error() string {
-	return errValidationError.Error()
+	var err error
+	for _, elem := range v {
+		err = errors.Join(err, elem.Err)
+	}
+	return err.Error()
 }
 
 func validateInt(key, field string, value int, ve *ValidationErrors) error {
@@ -59,24 +52,20 @@ func validateInt(key, field string, value int, ve *ValidationErrors) error {
 			if err != nil {
 				return errMinKey
 			} else if value < res {
-				vErr := ValidationError{
+				*ve = append(*ve, ValidationError{
 					Field: field,
-					Err:   errors.New("at " + field + ": invalid value, ocured value is less than min"),
-				}
-				*ve = append(*ve, vErr)
-				errValidationError = errors.Join(errValidationError, vErr.Err)
+					Err:   errValidationMinError,
+				})
 			}
 		case "max":
 			res, err := strconv.Atoi(subkeys[1])
 			if err != nil {
 				return errMaxKey
 			} else if value > res {
-				vErr := ValidationError{
+				*ve = append(*ve, ValidationError{
 					Field: field,
-					Err:   errors.New("at " + field + ": invalid value, ocured value is greater than max"),
-				}
-				*ve = append(*ve, vErr)
-				errValidationError = errors.Join(errValidationError, vErr.Err)
+					Err:   errValidationMaxError,
+				})
 			}
 		case "in":
 			values := strings.Split(subkeys[1], ",")
@@ -91,12 +80,10 @@ func validateInt(key, field string, value int, ve *ValidationErrors) error {
 				}
 			}
 			if !found {
-				vErr := ValidationError{
+				*ve = append(*ve, ValidationError{
 					Field: field,
-					Err:   errors.New("at " + field + ": invalid value, value is not in \"in\" list"),
-				}
-				*ve = append(*ve, vErr)
-				errValidationError = errors.Join(errValidationError, vErr.Err)
+					Err:   errValidationInError,
+				})
 			}
 		default:
 			return errInvelidTag
@@ -115,12 +102,10 @@ func validateString(key, field, value string, ve *ValidationErrors) error {
 			if err != nil {
 				return errLenKey
 			} else if len(value) != res {
-				vErr := ValidationError{
+				*ve = append(*ve, ValidationError{
 					Field: field,
-					Err:   errors.New("at " + field + ": invalid value, value's length is greater than len"),
-				}
-				*ve = append(*ve, vErr)
-				errValidationError = errors.Join(errValidationError, vErr.Err)
+					Err:   errValidationLenError,
+				})
 			}
 		case "regexp":
 			rx, err := regexp.Compile(subkeys[1])
@@ -129,22 +114,18 @@ func validateString(key, field, value string, ve *ValidationErrors) error {
 			} else {
 				res := rx.FindString(value)
 				if res != value {
-					vErr := ValidationError{
+					*ve = append(*ve, ValidationError{
 						Field: field,
-						Err:   errors.New("at " + field + ": invalid value, value doesn't match regular expression"),
-					}
-					*ve = append(*ve, vErr)
-					errValidationError = errors.Join(errValidationError, vErr.Err)
+						Err:   errValidationRegexpError,
+					})
 				}
 			}
 		case "in":
 			if !strings.Contains(subkeys[1], value) {
-				vErr := ValidationError{
+				*ve = append(*ve, ValidationError{
 					Field: field,
-					Err:   errors.New("at " + field + ": invalid value, value is not in \"in\" list"),
-				}
-				*ve = append(*ve, vErr)
-				errValidationError = errors.Join(errValidationError, vErr.Err)
+					Err:   errValidationInError,
+				})
 			}
 		default:
 			return errInvelidTag
@@ -155,7 +136,6 @@ func validateString(key, field, value string, ve *ValidationErrors) error {
 
 func Validate(v interface{}) error {
 	ve := make(ValidationErrors, 0)
-	// errValidationError = errors.New("validation completed with errors")
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Struct {
 		return errInvalidType
@@ -184,9 +164,8 @@ func Validate(v interface{}) error {
 						}
 					}
 				default:
-					v := ValidationError{Field: field.Name, Err: errors.New("at " + field.Name + ": unknown slice field type")}
+					v := ValidationError{Field: field.Name, Err: errValidationUnknownSlice}
 					ve = append(ve, v)
-					errValidationError = errors.Join(v.Err)
 				}
 			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 				err := validateInt(param, field.Name, int(value.Int()), &ve)
@@ -200,15 +179,18 @@ func Validate(v interface{}) error {
 					return err
 				}
 			default:
-				v := ValidationError{Field: field.Name, Err: errors.New("at " + field.Name + ": unknown field type")}
+				v := ValidationError{Field: field.Name, Err: errValidationUnknownType}
 				ve = append(ve, v)
-				errValidationError = errors.Join(v.Err)
 			}
 		}
 	}
 
 	if len(ve) > 0 {
-		return errValidationError
+		var err error
+		for _, elem := range ve {
+			err = errors.Join(err, elem.Err)
+		}
+		return err
 	}
 	return nil
 }

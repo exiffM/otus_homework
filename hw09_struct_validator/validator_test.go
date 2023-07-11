@@ -2,6 +2,7 @@ package hw09structvalidator
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -83,11 +84,10 @@ func TestValidate(t *testing.T) {
 				NotAccordMin:  5,
 				NotAccordMax:  10,
 			},
-			expectedErr: errValidationError,
-			expectedValidationErrors: "validation completed with errors\n" +
-				"at NotInSet: invalid value, value is not in \"in\" list\n" +
-				"at NotAccordMin: invalid value, ocured value is less than min\n" +
-				"at NotAccordMax: invalid value, ocured value is greater than max",
+			expectedErr: errors.Join(errValidationInError, errValidationMinError, errValidationMaxError),
+			expectedValidationErrors: "invalid value, value is not in \"in\" list\n" +
+				"invalid value, ocured value is less than min\n" +
+				"invalid value, ocured value is greater than max",
 		},
 		{
 			name: "InvalidTags",
@@ -120,11 +120,10 @@ func TestValidate(t *testing.T) {
 				Role:   "admin",
 				Phones: []string{"281-330-800", "1-800-nmber"},
 			},
-			expectedErr: errValidationError,
-			expectedValidationErrors: "validation completed with errors\n" +
-				"at ID: invalid value, value's length is greater than len\n" +
-				"at Age: invalid value, ocured value is less than min\n" +
-				"at Email: invalid value, value doesn't match regular expression\n",
+			expectedErr: errors.Join(errValidationLenError, errValidationMinError, errValidationRegexpError),
+			expectedValidationErrors: "invalid value, value's length is greater than len\n" +
+				"invalid value, ocured value is less than min\n" +
+				"invalid value, value doesn't match regular expression\n",
 		},
 		// {
 		// 	name: "Token",
