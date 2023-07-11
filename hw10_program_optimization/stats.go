@@ -10,13 +10,13 @@ import (
 )
 
 type User struct {
-	ID       int
-	Name     string
-	Username string
-	Email    string
-	Phone    string
-	Password string
-	Address  string
+	ID       int    `json:"Id"`
+	Name     string `jsosn:"Name"`
+	Username string `json:"Username"`
+	Email    string `json:"Email"`
+	Phone    string `json:"Phone"`
+	Password string `json:"Password"`
+	Address  string `json:"Address"`
 }
 
 type DomainStat map[string]int
@@ -30,8 +30,6 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 }
 
 type users [100_000]User
-
-// type users []User
 
 func getUsers(r io.Reader) (result users, err error) {
 	scaner := bufio.NewScanner(r)
