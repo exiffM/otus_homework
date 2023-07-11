@@ -17,6 +17,7 @@ var (
 	// global errors.
 	errInvalidType     = errors.New("inserted argument is not a struct")
 	errValidationError = errors.New("validation completed with errors")
+	ve                 ValidationErrors
 )
 
 type ValidationErrors []ValidationError
@@ -141,20 +142,20 @@ func validateString(key, field, value string, ve *ValidationErrors) {
 	}
 }
 
-func Validate(v interface{}) (string, error) {
-	ve := ValidationErrors{}
+func Validate(v interface{}) error {
+	ve = make(ValidationErrors, 0)
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Struct {
-		return ve.Error(), errInvalidType
+		return errInvalidType
 	}
 
 	fieldsList := reflect.VisibleFields(rv.Type())
 
 	for _, field := range fieldsList {
 		if param, ok := field.Tag.Lookup("validate"); ok {
-			switch field.Type.Kind() { //nolint:all
+			switch field.Type.Kind() { //nolint:exhaustive
 			case reflect.Slice:
-				switch field.Type.Elem().Kind() { //nolint:all
+				switch field.Type.Elem().Kind() { //nolint:exhaustive
 				case reflect.Int:
 					slice := rv.FieldByName(field.Name).Interface().([]int)
 					for _, elem := range slice {
@@ -179,7 +180,7 @@ func Validate(v interface{}) (string, error) {
 	}
 
 	if len(ve) > 0 {
-		return ve.Error(), errValidationError
+		return errValidationError
 	}
-	return ve.Error(), nil
+	return nil
 }

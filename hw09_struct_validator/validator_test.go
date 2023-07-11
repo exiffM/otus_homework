@@ -150,9 +150,9 @@ func TestValidate(t *testing.T) {
 			tt := tt
 			t.Parallel()
 
-			errorStr, err := Validate(tt.in)
+			err := Validate(tt.in)
 			require.ErrorIs(t, err, tt.expectedErr, "Errors missmatch. Actual error is %v", err)
-			require.Equal(t, tt.expectedValidationErrors, errorStr, "Errors missmatch. Actual errors are %v", errorStr)
+			require.Equal(t, tt.expectedValidationErrors, ve.Error(), "Errors missmatch. Actual errors are %v", ve.Error())
 		})
 	}
 }
