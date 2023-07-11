@@ -17,7 +17,7 @@ var (
 	// global errors.
 	errInvalidType     = errors.New("inserted argument is not a struct")
 	errValidationError = errors.New("validation completed with errors")
-	ve                 ValidationErrors
+	globalVe           ValidationErrors
 )
 
 type ValidationErrors []ValidationError
@@ -143,7 +143,10 @@ func validateString(key, field, value string, ve *ValidationErrors) {
 }
 
 func Validate(v interface{}) error {
-	ve = make(ValidationErrors, 0)
+	ve := make(ValidationErrors, 0)
+	defer func() {
+		globalVe = ve
+	}()
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Struct {
 		return errInvalidType
@@ -153,26 +156,26 @@ func Validate(v interface{}) error {
 
 	for _, field := range fieldsList {
 		if param, ok := field.Tag.Lookup("validate"); ok {
+			value := reflect.ValueOf(rv.FieldByName(field.Name).Interface())
 			switch field.Type.Kind() { //nolint:exhaustive
 			case reflect.Slice:
 				switch field.Type.Elem().Kind() { //nolint:exhaustive
-				case reflect.Int:
-					slice := rv.FieldByName(field.Name).Interface().([]int)
-					for _, elem := range slice {
-						validateInt(param, field.Name, elem, &ve)
+				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+					for i := 0; i < value.Len(); i++ {
+						validateInt(param, field.Name, int(value.Index(i).Int()), &ve)
 					}
 				case reflect.String:
-					slice := rv.FieldByName(field.Name).Interface().([]string)
-					for _, elem := range slice {
-						validateString(param, field.Name, elem, &ve)
+					for i := 0; i < value.Len(); i++ {
+						validateString(param, field.Name, value.Index(i).String(), &ve)
 					}
 				default:
 					ve = append(ve, ValidationError{Field: field.Name, Err: errors.New("unknown slice field type")})
 				}
-			case reflect.Int:
-				validateInt(param, field.Name, rv.FieldByName(field.Name).Interface().(int), &ve)
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				validateInt(param, field.Name, int(value.Int()), &ve)
+
 			case reflect.String:
-				validateString(param, field.Name, rv.FieldByName(field.Name).Interface().(string), &ve)
+				validateString(param, field.Name, value.String(), &ve)
 			default:
 				ve = append(ve, ValidationError{Field: field.Name, Err: errors.New("unknown field type")})
 			}

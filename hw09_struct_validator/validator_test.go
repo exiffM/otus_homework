@@ -8,7 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type UserRole string
+type (
+	Counter  int
+	UserRole string
+)
 
 // Test the function on different structures and other types.
 type (
@@ -17,7 +20,7 @@ type (
 		Name   string
 		Age    int             `validate:"min:18|max:50"`
 		Email  string          `validate:"regexp:^\\w+@\\w+\\.\\w+$"`
-		Role   string          `validate:"in:admin,stuff"`
+		Role   UserRole        `validate:"in:admin,stuff"`
 		Phones []string        `validate:"len:11"`
 		meta   json.RawMessage //nolint:unused
 	}
@@ -50,8 +53,12 @@ type (
 		BadMaxTag int    `validate:"maxf:15"`
 	}
 	UnknownTypes struct {
-		wideCharacters []rune  `validate:"max:10"`
-		radius         float64 `validate:"in:3.14,6.28,14.2"`
+		FloatingPoint []float32 `validate:"max:10"`
+		Radius        float64   `validate:"in:3.14,6.28,14.2"`
+	}
+	TypeAlias struct {
+		WideCharacters []rune  `validate:"in:435,324,546"`
+		Count          Counter `validate:"in:10,15,20"`
 	}
 )
 
@@ -137,11 +144,20 @@ func TestValidate(t *testing.T) {
 		{
 			name: "UnknownTypes",
 			in: UnknownTypes{
-				wideCharacters: []rune{432, 123, 654},
-				radius:         3.14,
+				FloatingPoint: []float32{4.4, 12.4, 213.4},
+				Radius:        3.14,
 			},
 			expectedErr:              errValidationError,
-			expectedValidationErrors: "wideCharacters-->unknown slice field type\nradius-->unknown field type\n",
+			expectedValidationErrors: "FloatingPoint-->unknown slice field type\nRadius-->unknown field type\n",
+		},
+		{
+			name: "TypeAlias",
+			in: TypeAlias{
+				WideCharacters: []rune{435, 324, 546},
+				Count:          15,
+			},
+			expectedErr:              nil,
+			expectedValidationErrors: "",
 		},
 	}
 
@@ -152,7 +168,8 @@ func TestValidate(t *testing.T) {
 
 			err := Validate(tt.in)
 			require.ErrorIs(t, err, tt.expectedErr, "Errors missmatch. Actual error is %v", err)
-			require.Equal(t, tt.expectedValidationErrors, ve.Error(), "Errors missmatch. Actual errors are %v", ve.Error())
+			require.Equal(t, tt.expectedValidationErrors, globalVe.Error(),
+				"Errors missmatch. Actual errors are %v", globalVe.Error())
 		})
 	}
 }
