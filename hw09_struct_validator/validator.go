@@ -23,11 +23,11 @@ var (
 	errRegexpKey   = errors.New("invalid key value, key regexp")
 	errInvelidTag  = errors.New("invalid validate tag")
 	// validation errors.
-	errValidationMinError     = errors.New("invalid value, ocured value is less than min")
-	errValidationMaxError     = errors.New("invalid value, ocured value is greater than max")
-	errValidationInError      = errors.New("invalid value, value is not in \"in\" list")
-	errValidationRegexpError  = errors.New("invalid value, value's length is greater than len")
-	errValidationLenError     = errors.New("invalid value, value doesn't match regular expression")
+	errValidationMin          = errors.New("invalid value, ocured value is less than min")
+	errValidationMax          = errors.New("invalid value, ocured value is greater than max")
+	errValidationIn           = errors.New("invalid value, value is not in \"in\" list")
+	errValidationRegexp       = errors.New("invalid value, value's length is greater than len")
+	errValidationLen          = errors.New("invalid value, value doesn't match regular expression")
 	errValidationUnknownType  = errors.New("unknown field type")
 	errValidationUnknownSlice = errors.New("unknown slice field type")
 )
@@ -52,20 +52,14 @@ func validateInt(key, field string, value int, ve *ValidationErrors) error {
 			if err != nil {
 				return errMinKey
 			} else if value < res {
-				*ve = append(*ve, ValidationError{
-					Field: field,
-					Err:   errValidationMinError,
-				})
+				*ve = append(*ve, ValidationError{Field: field, Err: errValidationMin})
 			}
 		case "max":
 			res, err := strconv.Atoi(subkeys[1])
 			if err != nil {
 				return errMaxKey
 			} else if value > res {
-				*ve = append(*ve, ValidationError{
-					Field: field,
-					Err:   errValidationMaxError,
-				})
+				*ve = append(*ve, ValidationError{Field: field, Err: errValidationMax})
 			}
 		case "in":
 			values := strings.Split(subkeys[1], ",")
@@ -80,10 +74,7 @@ func validateInt(key, field string, value int, ve *ValidationErrors) error {
 				}
 			}
 			if !found {
-				*ve = append(*ve, ValidationError{
-					Field: field,
-					Err:   errValidationInError,
-				})
+				*ve = append(*ve, ValidationError{Field: field, Err: errValidationIn})
 			}
 		default:
 			return errInvelidTag
@@ -102,34 +93,46 @@ func validateString(key, field, value string, ve *ValidationErrors) error {
 			if err != nil {
 				return errLenKey
 			} else if len(value) != res {
-				*ve = append(*ve, ValidationError{
-					Field: field,
-					Err:   errValidationLenError,
-				})
+				*ve = append(*ve, ValidationError{Field: field, Err: errValidationLen})
 			}
 		case "regexp":
 			rx, err := regexp.Compile(subkeys[1])
 			if err != nil {
 				return errRegexpKey
-			} else {
-				res := rx.FindString(value)
-				if res != value {
-					*ve = append(*ve, ValidationError{
-						Field: field,
-						Err:   errValidationRegexpError,
-					})
-				}
+			}
+			res := rx.FindString(value)
+			if res != value {
+				*ve = append(*ve, ValidationError{Field: field, Err: errValidationRegexp})
 			}
 		case "in":
 			if !strings.Contains(subkeys[1], value) {
-				*ve = append(*ve, ValidationError{
-					Field: field,
-					Err:   errValidationInError,
-				})
+				*ve = append(*ve, ValidationError{Field: field, Err: errValidationIn})
 			}
 		default:
 			return errInvelidTag
 		}
+	}
+	return nil
+}
+
+func validateSlice(value reflect.Value, field reflect.StructField, param string, ve *ValidationErrors) error {
+	switch field.Type.Elem().Kind() { //nolint:exhaustive
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		for i := 0; i < value.Len(); i++ {
+			err := validateInt(param, field.Name, int(value.Index(i).Int()), ve)
+			if err != nil {
+				return err
+			}
+		}
+	case reflect.String:
+		for i := 0; i < value.Len(); i++ {
+			err := validateString(param, field.Name, value.Index(i).String(), ve)
+			if err != nil {
+				return err
+			}
+		}
+	default:
+		*ve = append(*ve, ValidationError{Field: field.Name, Err: errValidationUnknownSlice})
 	}
 	return nil
 }
@@ -148,24 +151,8 @@ func Validate(v interface{}) error {
 			value := reflect.ValueOf(rv.FieldByName(field.Name).Interface())
 			switch field.Type.Kind() { //nolint:exhaustive
 			case reflect.Slice:
-				switch field.Type.Elem().Kind() { //nolint:exhaustive
-				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-					for i := 0; i < value.Len(); i++ {
-						err := validateInt(param, field.Name, int(value.Index(i).Int()), &ve)
-						if err != nil {
-							return err
-						}
-					}
-				case reflect.String:
-					for i := 0; i < value.Len(); i++ {
-						err := validateString(param, field.Name, value.Index(i).String(), &ve)
-						if err != nil {
-							return err
-						}
-					}
-				default:
-					v := ValidationError{Field: field.Name, Err: errValidationUnknownSlice}
-					ve = append(ve, v)
+				if err := validateSlice(value, field, param, &ve); err != nil {
+					return err
 				}
 			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 				err := validateInt(param, field.Name, int(value.Int()), &ve)
@@ -179,12 +166,10 @@ func Validate(v interface{}) error {
 					return err
 				}
 			default:
-				v := ValidationError{Field: field.Name, Err: errValidationUnknownType}
-				ve = append(ve, v)
+				ve = append(ve, ValidationError{Field: field.Name, Err: errValidationUnknownType})
 			}
 		}
 	}
-
 	if len(ve) > 0 {
 		var err error
 		for _, elem := range ve {
