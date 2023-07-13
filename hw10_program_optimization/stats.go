@@ -9,6 +9,7 @@ import (
 	easyjson "github.com/mailru/easyjson"
 )
 
+// easyjson:json
 type User struct {
 	ID       int    `json:"Id"`
 	Name     string `jsosn:"Name"`
@@ -29,6 +30,7 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	return countDomains(u, domain)
 }
 
+// easyjson:json
 type users [100_000]User
 
 func getUsers(r io.Reader) (result users, err error) {
@@ -37,7 +39,8 @@ func getUsers(r io.Reader) (result users, err error) {
 
 	i := 0
 	for scaner.Scan() {
-		if err = easyjson.Unmarshal(scaner.Bytes(), &result[i]); err != nil {
+		err = easyjson.Unmarshal(scaner.Bytes(), &result[i])
+		if err != nil {
 			return
 		}
 		i++
