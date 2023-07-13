@@ -2,6 +2,7 @@ package hw09structvalidator
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -35,11 +36,14 @@ var (
 type ValidationErrors []ValidationError
 
 func (v ValidationErrors) Error() string {
-	var err error
-	for _, elem := range v {
-		err = errors.Join(err, elem.Err)
+	msg := ""
+	for idx, elem := range v {
+		if idx == 0 {
+			msg = "Validation finished with errors"
+		}
+		msg = fmt.Sprintf("%s\n%s --> %s", msg, elem.Field, elem.Err.Error())
 	}
-	return err.Error()
+	return msg
 }
 
 func validateInt(key, field string, value int, ve *ValidationErrors) error {
@@ -171,11 +175,7 @@ func Validate(v interface{}) error {
 		}
 	}
 	if len(ve) > 0 {
-		var err error
-		for _, elem := range ve {
-			err = errors.Join(err, elem.Err)
-		}
-		return err
+		return fmt.Errorf(ve.Error())
 	}
 	return nil
 }

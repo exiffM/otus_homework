@@ -101,15 +101,10 @@ type (
 
 func TestValidate(t *testing.T) {
 	tests := []struct {
-		name        string
-		in          interface{}
-		expectedErr []error
+		name           string
+		in             interface{}
+		expectedErrStr string
 	}{
-		{
-			name:        "int",
-			in:          10,
-			expectedErr: []error{errInvalidType},
-		},
 		{
 			name: "ExtraStruct",
 			in: ExtraStruct{
@@ -118,59 +113,8 @@ func TestValidate(t *testing.T) {
 				NotAccordMin:  5,
 				NotAccordMax:  10,
 			},
-			expectedErr: []error{errValidationIn, errValidationMin, errValidationMax},
-		},
-		{
-			name: "InvalidLenTag",
-			in: InvalidLenTag{
-				BadRegexp: "any string",
-				BadVal:    155,
-				BadTag:    "any",
-				BadInTag:  10,
-				BadMaxTag: 15,
-			},
-			expectedErr: []error{errLenKey},
-		},
-		{
-			name: "InvalidRegexpTag",
-			in: InvalidRegexpTag{
-				BadRegexp: "any string",
-				BadVal:    155,
-				BadTag:    "any",
-				BadInTag:  10,
-				BadMaxTag: 15,
-			},
-			expectedErr: []error{errRegexpKey},
-		},
-		{
-			name: "InvalidMinTag",
-			in: InvalidMinTag{
-				BadVal:    155,
-				BadTag:    "any",
-				BadInTag:  10,
-				BadMaxTag: 15,
-			},
-			expectedErr: []error{errMinKey},
-		},
-		{
-			name: "InvalidMaxTag",
-			in: InvalidMaxTag{
-				BadVal:    155,
-				BadTag:    "any",
-				BadInTag:  10,
-				BadMaxTag: 15,
-			},
-			expectedErr: []error{errMaxKey},
-		},
-		{
-			name: "InvalidTag",
-			in: InvalidTag{
-				BadVal:    155,
-				BadTag:    "any",
-				BadInTag:  10,
-				BadMaxTag: 15,
-			},
-			expectedErr: []error{errInvelidTag},
+			expectedErrStr: "Validation finished with errors\nNotInSet --> " + errValidationIn.Error() +
+				"\nNotAccordMin --> " + errValidationMin.Error() + "\nNotAccordMax --> " + errValidationMax.Error(),
 		},
 		{
 			name: "NotIn",
@@ -180,17 +124,7 @@ func TestValidate(t *testing.T) {
 				BadInTag:  10,
 				BadMaxTag: 15,
 			},
-			expectedErr: []error{errValidationIn},
-		},
-		{
-			name: "InvalidIn",
-			in: InvalidIn{
-				BadVal:    155,
-				BadTag:    "anylentens",
-				BadInTag:  10,
-				BadMaxTag: 15,
-			},
-			expectedErr: []error{errInvelidTag},
+			expectedErrStr: "Validation finished with errors\nBadVal --> " + errValidationIn.Error(),
 		},
 		{
 			name: "User",
@@ -202,16 +136,8 @@ func TestValidate(t *testing.T) {
 				Role:   "admin",
 				Phones: []string{"281-330-800", "1-800-nmber"},
 			},
-			expectedErr: []error{errValidationLen, errValidationMin, errValidationRegexp},
-		},
-		{
-			name: "Token",
-			in: Token{
-				Header:    []byte{'c', '1', 'b'},
-				Payload:   []byte{'p', 'a', 'y'},
-				Signature: []byte{'b', 'y', 't', 'e', 's'},
-			},
-			expectedErr: nil,
+			expectedErrStr: "Validation finished with errors\nID --> " + errValidationLen.Error() +
+				"\nAge --> " + errValidationMin.Error() + "\nEmail --> " + errValidationRegexp.Error(),
 		},
 		{
 			name: "UnknownTypes",
@@ -219,13 +145,109 @@ func TestValidate(t *testing.T) {
 				FloatingPoint: []float32{4.4, 12.4, 213.4},
 				Radius:        3.14,
 			},
-			expectedErr: []error{errValidationUnknownSlice, errValidationUnknownType},
+			expectedErrStr: "Validation finished with errors\nFloatingPoint --> " + errValidationUnknownSlice.Error() +
+				"\nRadius --> " + errValidationUnknownType.Error(),
+		},
+	}
+
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf("case %d %v", i, tt.name), func(t *testing.T) {
+			tt := tt
+			t.Parallel()
+
+			err := Validate(tt.in)
+			require.EqualError(t, err, tt.expectedErrStr, "Errors missmatch. Actual error is %v", err)
+		})
+	}
+}
+
+func TestGlobalErrors(t *testing.T) {
+	tests := []struct {
+		name        string
+		in          interface{}
+		expectedErr error
+	}{
+		{
+			name:        "int",
+			in:          10,
+			expectedErr: errInvalidType,
+		},
+		{
+			name: "InvalidLenTag",
+			in: InvalidLenTag{
+				BadRegexp: "any string",
+				BadVal:    155,
+				BadTag:    "any",
+				BadInTag:  10,
+				BadMaxTag: 15,
+			},
+			expectedErr: errLenKey,
+		},
+		{
+			name: "InvalidRegexpTag",
+			in: InvalidRegexpTag{
+				BadRegexp: "any string",
+				BadVal:    155,
+				BadTag:    "any",
+				BadInTag:  10,
+				BadMaxTag: 15,
+			},
+			expectedErr: errRegexpKey,
+		},
+		{
+			name: "InvalidMinTag",
+			in: InvalidMinTag{
+				BadVal:    155,
+				BadTag:    "any",
+				BadInTag:  10,
+				BadMaxTag: 15,
+			},
+			expectedErr: errMinKey,
+		},
+		{
+			name: "InvalidMaxTag",
+			in: InvalidMaxTag{
+				BadVal:    155,
+				BadTag:    "any",
+				BadInTag:  10,
+				BadMaxTag: 15,
+			},
+			expectedErr: errMaxKey,
+		},
+		{
+			name: "InvalidTag",
+			in: InvalidTag{
+				BadVal:    155,
+				BadTag:    "any",
+				BadInTag:  10,
+				BadMaxTag: 15,
+			},
+			expectedErr: errInvelidTag,
+		},
+		{
+			name: "InvalidIn",
+			in: InvalidIn{
+				BadVal:    155,
+				BadTag:    "anylentens",
+				BadInTag:  10,
+				BadMaxTag: 15,
+			},
+			expectedErr: errInvelidTag,
 		},
 		{
 			name: "TypeAlias",
 			in: TypeAlias{
 				WideCharacters: []rune{435, 324, 546},
 				Count:          15,
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "Token",
+			in: Token{
+				Header:    []byte{'c', '1', 'b'},
+				Payload:   []byte{'p', 'a', 'y'},
+				Signature: []byte{'b', 'y', 't', 'e', 's'},
 			},
 			expectedErr: nil,
 		},
@@ -237,13 +259,7 @@ func TestValidate(t *testing.T) {
 			t.Parallel()
 
 			err := Validate(tt.in)
-			// expErrStr := errors.Join(tt.expectedErr...)
-			// if expErrStr != nil {
-			// 	require.Equal(t, expErrStr.Error(), err.Error(), "Errorrs message mismatch. Actual error is %v", err.Error())
-			// }
-			for _, expErr := range tt.expectedErr {
-				require.ErrorIs(t, err, expErr, "Errors missmatch. Actual error is %v", err)
-			}
+			require.ErrorIs(t, err, tt.expectedErr, "Errors missmatch. Actual error is %v", err)
 		})
 	}
 }
