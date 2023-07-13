@@ -120,7 +120,7 @@ func validateString(key, field, value string, ve *ValidationErrors) error {
 }
 
 func validateSlice(value reflect.Value, field reflect.StructField, param string, ve *ValidationErrors) error {
-	switch field.Type.Elem().Kind() { //nolint:exhaustive
+	switch field.Type.Elem().Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		for i := 0; i < value.Len(); i++ {
 			err := validateInt(param, field.Name, int(value.Index(i).Int()), ve)
@@ -135,7 +135,11 @@ func validateSlice(value reflect.Value, field reflect.StructField, param string,
 				return err
 			}
 		}
-	default:
+	case reflect.Invalid, reflect.Bool, reflect.Slice, reflect.Struct,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Uintptr, reflect.Float32, reflect.Float64, reflect.Complex64, reflect.Complex128,
+		reflect.Array, reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer,
+		reflect.UnsafePointer:
 		*ve = append(*ve, ValidationError{Field: field.Name, Err: errValidationUnknownSlice})
 	}
 	return nil
@@ -153,7 +157,7 @@ func Validate(v interface{}) error {
 	for _, field := range fieldsList {
 		if param, ok := field.Tag.Lookup("validate"); ok {
 			value := reflect.ValueOf(rv.FieldByName(field.Name).Interface())
-			switch field.Type.Kind() { //nolint:exhaustive
+			switch field.Type.Kind() {
 			case reflect.Slice:
 				if err := validateSlice(value, field, param, &ve); err != nil {
 					return err
@@ -169,7 +173,11 @@ func Validate(v interface{}) error {
 				if err != nil {
 					return err
 				}
-			default:
+			case reflect.Invalid, reflect.Bool, reflect.Struct,
+				reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+				reflect.Uintptr, reflect.Float32, reflect.Float64, reflect.Complex64, reflect.Complex128,
+				reflect.Array, reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer,
+				reflect.UnsafePointer:
 				ve = append(ve, ValidationError{Field: field.Name, Err: errValidationUnknownType})
 			}
 		}
