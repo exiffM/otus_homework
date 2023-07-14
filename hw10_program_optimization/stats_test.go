@@ -38,3 +38,37 @@ func TestGetDomainStat(t *testing.T) {
 		require.Equal(t, DomainStat{}, result)
 	})
 }
+
+func TestGetInvalidDomain(t *testing.T) {
+	dataCorupted := `{"Id":1,"Name":"Howard Mendoza","Username":"0Oliver","Email":"aliquid_qui_eaBrowsedrive.gov","Phone":"6-866-899-36-79","Password":"InAQJvsq","Address":"Blackbird Place 25"}
+	{"Id":2,"Name":"Jesse Vasquez","Username":"qRichardson","Email":"mLynch@broWsecat.com","Phone":"9-373-949-64-00","Password":"SiZLeNSGn","Address":"Fulton Hill 80"}
+	{"Id":3,"Name":"Clarence Olson","Username":"RachelAdams","Email":"Browsecat.com","Phone":"988-48-97","Password":"71kuz3gA5w","Address":"Monterey Park 39"}
+	{"Id":4,"Name":"Gregory Reid","Username":"tButler","Email":"5Moore@net","Phone":"520-04-16","Password":"r639qLNu","Address":"Sunfield Park 20"}
+	{"Id":5,"Name":"Janice Rose","Username":"KeithHart","Email":"nulla@Linktype.com","Phone":"146-91-01","Password":"acSBF5","Address":"Russell Trail 61"}`
+
+	dataInvalid := `}]{"Id":1,"Name":"Howard Mendoza","Username":"0Oliver","Email":"aliquid_qui_eaBrowsedrive.gov","Phone":"6-866-899-36-79","Password":"InAQJvsq","Address":"Blackbird Place 25"}
+	{"Id":2,"Name":"Jesse Vasquez","Username":"qRichardson","Email":"mLynch@brocom","Phone":"9-373-949-64-00","Password":"SiZLeNSGn","Address":"Fulton Hill 80"}
+	{"Id":3,"Name":"Clarence Olson","Username":"RachelAdams","Email":"Browsecat.com","Phone":"988-48-97","Password":"71kuz3gA5w","Address":"Monterey Park 39"}
+	{"Id":4,"Name":"Gregory Reid","Username":"tButler","Email":"5Moore@net","Phone":"520-04-16","Password":"r639qLNu","Address":"Sunfield Park 20"}
+	{"Id":5,"Name":"Janice Rose","Username":"KeithHart","Email":"342993dsfdsom","Phone":"146-91-01","Password":"acSBF5","Address":"Russell Trail 61"}[`
+
+	t.Run("invalid data passed", func(t *testing.T) {
+		result, err := GetDomainStat(bytes.NewBufferString(dataInvalid), "com")
+		require.Errorf(t, err, "get users error: parse error: syntax error near offset 0 of '}]{\"Id\":1,...'")
+		require.Nil(t, result)
+	})
+
+	t.Run("empty data", func(t *testing.T) {
+		result, err := GetDomainStat(bytes.NewBufferString(""), "gov")
+		require.NoError(t, err)
+		require.Equal(t, DomainStat{}, result)
+	})
+
+	t.Run("find 'com'", func(t *testing.T) {
+		result, err := GetDomainStat(bytes.NewBufferString(dataCorupted), "com")
+		require.NoError(t, err)
+		require.Equal(t, DomainStat{
+			"browsecat.com": 1,
+			"linktype.com":  1}, result)
+	})
+}

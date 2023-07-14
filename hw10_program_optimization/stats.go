@@ -9,6 +9,8 @@ import (
 	easyjson "github.com/mailru/easyjson"
 )
 
+// var errGetUsers = errors.New("get users error")
+
 // easyjson:json
 type User struct {
 	ID       int    `json:"Id"`
@@ -30,7 +32,6 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	return countDomains(u, domain)
 }
 
-// easyjson:json
 type users [100_000]User
 
 func getUsers(r io.Reader) (result users, err error) {
@@ -60,7 +61,7 @@ func countDomains(u users, domain string) (DomainStat, error) {
 	}
 
 	for _, user := range u {
-		ok := strings.Contains(user.Email, sb.String())
+		ok := strings.Contains(user.Email, sb.String()) && strings.Contains(user.Email, "@")
 
 		if ok {
 			num := result[strings.ToLower(strings.Split(user.Email, "@")[1])]
