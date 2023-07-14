@@ -45,9 +45,6 @@ func getUsers(r io.Reader) (result users, err error) {
 		}
 		i++
 	}
-
-	// easyjson.UnmarshalFromReader(r, &result)
-
 	return
 }
 
