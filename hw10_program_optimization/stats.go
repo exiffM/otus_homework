@@ -9,17 +9,15 @@ import (
 	easyjson "github.com/mailru/easyjson"
 )
 
-// var errGetUsers = errors.New("get users error")
-
 // easyjson:json
 type User struct {
-	ID       int    `json:"Id"`
-	Name     string `jsosn:"Name"`
-	Username string `json:"Username"`
-	Email    string `json:"Email"`
-	Phone    string `json:"Phone"`
-	Password string `json:"Password"`
-	Address  string `json:"Address"`
+	ID       int    `json:"id"`
+	Name     string `jsosn:"name"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	Password string `json:"password"`
+	Address  string `json:"address"`
 }
 
 type DomainStat map[string]int
