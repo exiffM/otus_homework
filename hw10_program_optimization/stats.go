@@ -1,21 +1,23 @@
 package hw10programoptimization
 
 import (
-	"encoding/json"
+	"bufio"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
+
+	easyjson "github.com/mailru/easyjson"
 )
 
+// easyjson:json
 type User struct {
-	ID       int
-	Name     string
-	Username string
-	Email    string
-	Phone    string
-	Password string
-	Address  string
+	ID       int    `json:"id"`
+	Name     string `jsosn:"name"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	Password string `json:"password"`
+	Address  string `json:"address"`
 }
 
 type DomainStat map[string]int
@@ -31,35 +33,38 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 type users [100_000]User
 
 func getUsers(r io.Reader) (result users, err error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return
-	}
+	scaner := bufio.NewScanner(r)
+	scaner.Split(bufio.ScanLines)
 
-	lines := strings.Split(string(content), "\n")
-	for i, line := range lines {
-		var user User
-		if err = json.Unmarshal([]byte(line), &user); err != nil {
+	i := 0
+	for scaner.Scan() {
+		err = easyjson.Unmarshal(scaner.Bytes(), &result[i])
+		if err != nil {
 			return
 		}
-		result[i] = user
+		i++
 	}
 	return
 }
 
 func countDomains(u users, domain string) (DomainStat, error) {
 	result := make(DomainStat)
+	sb := strings.Builder{}
+	if _, err := sb.WriteString("."); err != nil {
+		return nil, err
+	}
+
+	if _, err := sb.WriteString(domain); err != nil {
+		return nil, err
+	}
 
 	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
-		if err != nil {
-			return nil, err
-		}
+		ok := strings.Contains(user.Email, sb.String()) && strings.Contains(user.Email, "@")
 
-		if matched {
-			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
+		if ok {
+			num := result[strings.ToLower(strings.Split(user.Email, "@")[1])]
 			num++
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
+			result[strings.ToLower(strings.Split(user.Email, "@")[1])] = num
 		}
 	}
 	return result, nil

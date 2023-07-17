@@ -17,6 +17,7 @@ linters-settings:
          - $gostd
          - github.com/stretchr
          - github.com/cheggaaa
+         - github.com/mailru/easyjson
 
 issues:
   exclude-rules:
