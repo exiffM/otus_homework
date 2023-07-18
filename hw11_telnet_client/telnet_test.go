@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -40,6 +41,7 @@ func TestTelnetClient(t *testing.T) {
 			err = client.Receive()
 			require.NoError(t, err)
 			require.Equal(t, "world\n", out.String())
+			client.FinishChan() <- os.Interrupt
 		}()
 
 		go func() {
