@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"os"
@@ -64,14 +63,14 @@ func (tc *TnetClient) Send() error {
 			// fmt.Println("In send for cycle")
 			select {
 			case <-tc.ctx.Done():
-				fmt.Println("Send is done by context cancel func")
+				// fmt.Println("Send is done by context cancel func")
 				return
 			case data, ok := <-stdin:
 				sb.WriteString(data)
 				sb.WriteString("\n")
-				fmt.Println("Before write in socket")
+				// fmt.Println("Before write in socket")
 				_, err := tc.conn.Write([]byte(sb.String()))
-				fmt.Println("After write in socket")
+				// fmt.Println("After write in socket")
 				sb.Reset()
 				if err != nil {
 					return
@@ -120,7 +119,7 @@ func (tc *TnetClient) Receive() error {
 			break
 		}
 	}
-	fmt.Println("Out of recv for cycle")
+	// fmt.Println("Out of recv for cycle")
 	// }()
 
 	// if tc.lastError != nil {
@@ -158,11 +157,11 @@ func stdinScan(in io.ReadCloser) chan string {
 			out <- scanner.Text()
 		}
 		if scanner.Err() != nil {
-			fmt.Println("stdin chan is closed 1")
+			// fmt.Println("stdin chan is closed 1")
 			close(out)
 		}
 		if errors.Is(scanner.Err(), io.EOF) {
-			fmt.Println("stdin chan is closed 2")
+			// fmt.Println("stdin chan is closed 2")
 			close(out)
 		}
 	}()
