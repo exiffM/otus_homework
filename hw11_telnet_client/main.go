@@ -90,7 +90,7 @@ func main() {
 			default:
 				err := client.Receive()
 				if err != nil {
-					fmt.Println(err.Error())
+					// fmt.Println(err.Error())
 					return
 				}
 			}
@@ -143,15 +143,15 @@ func main() {
 
 			_, err = inBuff.WriteString(data)
 			if err != nil {
-				fmt.Println("here2")
-				fmt.Println(err.Error())
+				// fmt.Println("here2")
+				// fmt.Println(err.Error())
 				return
 			}
 
 			err = client.Send()
 			if err != nil {
 				if count >= 1 {
-					fmt.Println("Resend attempts are over")
+					// fmt.Println("Resend attempts are over")
 					return
 				}
 				count++
