@@ -71,13 +71,7 @@ func main() {
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
-	// interruptChan := make(chan os.Signal, 1)
-
-	// signal.Notify(interruptChan, os.Interrupt)
-
 	ctx, cancel := context.WithCancel(context.Background())
-
-	// inChan := stdinScan(os.Stdin)
 
 	// Receiver goroutine
 	Receiver := func() {
@@ -85,12 +79,10 @@ func main() {
 		for {
 			select {
 			case <-ctx.Done():
-				// fmt.Println("Canceled by context")
 				return
 			default:
 				err := client.Receive()
 				if err != nil {
-					// fmt.Println(err.Error())
 					return
 				}
 			}
@@ -103,12 +95,10 @@ func main() {
 	Sender := func() {
 		defer func() {
 			wg.Done()
-			// fmt.Println("Before cancel")
 			cancel()
-			// fmt.Println("After cancel")
 			client.Close()
 		}()
-		stdinBuff := bufio.NewReader(os.Stdin)
+		stdinBuff := bufio.NewScanner(os.Stdin)
 
 		for {
 			// select {
@@ -132,26 +122,19 @@ func main() {
 			// 		count++
 			// 	}
 			// }
-			data, err := stdinBuff.ReadString('\n')
-			if err != nil {
-				// if errors.Is(err, io.EOF) {
-				// 	interruptChan <- os.Interrupt
-				// }
-				// fmt.Println(err.Error())
+			ok := stdinBuff.Scan()
+			if !ok {
 				return
 			}
 
-			_, err = inBuff.WriteString(data)
+			_, err = inBuff.WriteString(stdinBuff.Text())
 			if err != nil {
-				// fmt.Println("here2")
-				// fmt.Println(err.Error())
 				return
 			}
 
 			err = client.Send()
 			if err != nil {
 				if count >= 1 {
-					// fmt.Println("Resend attempts are over")
 					return
 				}
 				count++
