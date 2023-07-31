@@ -127,7 +127,7 @@ func main() {
 				return
 			}
 
-			_, err = inBuff.WriteString(stdinBuff.Text())
+			_, err = inBuff.WriteString(stdinBuff.Text() + "\n")
 			if err != nil {
 				return
 			}
