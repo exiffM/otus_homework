@@ -1,6 +1,10 @@
-create schema if not exists calendardb;
+drop database if exists calendardb;
 
-drop schema calendardb cascade;
+create database calendardb;
+
+create user igor with encrypted password 'igor';
+
+grant all privileges on database calendardb to igor;
 
 drop table if exists events;
 
