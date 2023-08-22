@@ -1,7 +1,6 @@
 package sqlstorage
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -15,13 +14,12 @@ var dsn = "user=igor dbname=calendardb password=igor"
 
 func TestStorage(t *testing.T) {
 	storage := New(dsn)
-	ctx := context.TODO()
 	loc, err := time.LoadLocation("Europe/Moscow")
 	_ = loc // hotfix for tests (TODO: accept location on application level)
 	_ = err
 
 	t.Run("connect to database", func(t *testing.T) {
-		err := storage.Connect(ctx)
+		err := storage.Connect()
 		require.Nil(t, err, "Failed! Actual error is not nil!")
 	})
 
@@ -34,7 +32,7 @@ func TestStorage(t *testing.T) {
 			Description:      "My first event in this calendar",
 			NotificationTime: int(time.Minute * 15),
 		}
-		err := storage.CreateEvent(event)
+		_, err := storage.CreateEvent(event)
 		require.Nil(t, err, "Failed! Actual error is not nil!")
 		nEvent, err := storage.SelectEvent(1)
 		require.Nil(t, err, "Failed! Actual error is not nil!")
@@ -50,7 +48,7 @@ func TestStorage(t *testing.T) {
 			Description:      "Other description of event",
 			NotificationTime: int(time.Minute * 15),
 		}
-		err := storage.UpdateEvent(event)
+		_, err := storage.UpdateEvent(event)
 		require.Nil(t, err, "Failed! Error is not nil!")
 
 		nEvent, _ := storage.SelectEvent(1)
@@ -69,7 +67,7 @@ func TestStorage(t *testing.T) {
 			Description:      "Other description of event",
 			NotificationTime: int(time.Minute * 15),
 		}
-		err := storage.CreateEvent(event)
+		_, err := storage.CreateEvent(event)
 		require.Nil(t, err, "Failed! Error is not nil")
 
 		err = storage.DeleteEvent(1)

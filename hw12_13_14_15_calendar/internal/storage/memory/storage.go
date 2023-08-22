@@ -34,15 +34,15 @@ func (s *Storage) Close() error {
 	return nil
 }
 
-func (s *Storage) CreateEvent(event mdl.Event) error {
+func (s *Storage) CreateEvent(event mdl.Event) (mdl.Event, error) {
 	if s.data == nil {
-		return errCreate
+		return mdl.Event{}, errCreate
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	event.ID = len(s.data)
 	s.data[event.ID] = event
-	return nil
+	return event, nil
 }
 
 func (s *Storage) SelectEvent(id int) (mdl.Event, error) {
@@ -58,18 +58,18 @@ func (s *Storage) SelectEvent(id int) (mdl.Event, error) {
 	return event, nil
 }
 
-func (s *Storage) UpdateEvent(event mdl.Event) error {
+func (s *Storage) UpdateEvent(event mdl.Event) (mdl.Event, error) {
 	if s.data == nil {
-		return errCreate
+		return mdl.Event{}, errCreate
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	_, ok := s.data[event.ID]
 	if !ok {
-		return errExist
+		return mdl.Event{}, errExist
 	}
 	s.data[event.ID] = event
-	return nil
+	return event, nil
 }
 
 func (s *Storage) DeleteEvent(id int) error {

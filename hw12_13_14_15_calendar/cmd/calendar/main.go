@@ -28,7 +28,7 @@ func main() {
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
-		printVersion()
+		// printVersion()
 		return
 	}
 

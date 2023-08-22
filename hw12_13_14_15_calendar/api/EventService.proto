@@ -1,7 +1,36 @@
 syntax = "proto3";
 
-package event;
+package calendar;
+
+option go_package = "./;eventrpcapi";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service EventService {
+    rpc CreateEvent (Event)           returns (Event) {}
+    rpc SelectEvent (Id)              returns (Event)                 {}
+    rpc UpdateEvent (Event)           returns (Event) {}
+    rpc DeleteEvent (Id)              returns (google.protobuf.Empty) {}
+    rpc Events(google.protobuf.Empty) returns (stream Event)          {}
+}
+
+message Null {
+}
 
 message Event {
-    // TODO
+    int32 id                        = 1;
+    string tittle                   = 2;
+    google.protobuf.Timestamp start = 3;
+    int32 duration                  = 4;
+    string description              = 5;
+    int32 notification              = 6;
+}
+
+message Error {
+    string error = 1;
+}
+  
+message Id {
+    int32 id = 1;
 }

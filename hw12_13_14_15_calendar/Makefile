@@ -22,6 +22,12 @@ run-img: build-img
 version: build
 	$(BIN) version
 
+generate:
+	rm -rf ./internal/server/grpc/pb
+	mkdir ./internal/server/grpc/pb
+
+	protoc --go-grpc_out=./internal/server/grpc/pb --go_out=./internal/server/grpc/pb ./api/EventService.proto
+
 test:
 	go test -race ./internal/...
 
@@ -29,6 +35,6 @@ install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.50.1
 
 lint: install-lint-deps
-	golangci-lint run ./...
+	golangci-lint -v run ./...
 
 .PHONY: build run build-img run-img version test lint
