@@ -5,6 +5,7 @@ import (
 	"time"
 
 	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/migrations"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,6 +14,7 @@ import (
 var dsn = "user=igor dbname=calendardb password=igor"
 
 func TestStorage(t *testing.T) {
+	migrations.Up()
 	storage := New(dsn)
 	loc, err := time.LoadLocation("Europe/Moscow")
 	_ = loc // hotfix for tests (TODO: accept location on application level)
@@ -86,4 +88,5 @@ func TestStorage(t *testing.T) {
 		require.Equal(t, []mdl.Event{expectedEvent},
 			events, "Failed! Event slices are not equal!")
 	})
+	migrations.Down()
 }

@@ -15,33 +15,19 @@ import (
 	api "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/http/api/default"
 	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
 	sqlstorage "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage/sql"
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/migrations"
 	"github.com/mailru/easyjson"
 	"github.com/stretchr/testify/require"
 )
 
-// func init() {
-// 	ctx = context.Background()
-// 	log = logger.New("info", os.Stdin)
-// 	source = sqlstorage.New(dsn)
-// 	application = app.New(log, source)
-// 	httpServer = NewServer(host, port, log, application)
-
-//		wg = &sync.WaitGroup{}
-//		wg.Add(1)
-//		go func() {
-//			defer wg.Done()
-//			httpServer.Start(ctx)
-//		}()
-//		time.Sleep(5 * time.Second)
-//		client = &http.Client{}
-//	}
-
 func TestComplex(t *testing.T) {
+	time.Sleep(time.Second * 2)
+	migrations.Up()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	dsn := "user=igor dbname=calendardb password=igor"
 	host := "localhost"
 	port := "1235"
+	dsn := "user=igor dbname=calendardb password=igor"
 	log := logger.New("info", os.Stdin)
 	source := sqlstorage.New(dsn)
 	application := app.New(log, source)
@@ -192,4 +178,6 @@ func TestComplex(t *testing.T) {
 			"Error in response! Actual response is: %q", defResponse.Error)
 		response.Body.Close()
 	})
+	migrations.Down()
+	time.Sleep(time.Second * 2)
 }

@@ -2,16 +2,10 @@ package sqlstorage
 
 import (
 	"database/sql"
-	"embed"
-	"sync"
 
 	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
 	_ "github.com/lib/pq" // comment for justifying
-	"github.com/pressly/goose/v3"
 )
-
-//go:embed migrations/*.sql
-var embedMigrations embed.FS
 
 type Storage struct {
 	dsn    string
@@ -29,19 +23,6 @@ func (s *Storage) Connect() error {
 	if err != nil {
 		return err
 	}
-	once := &sync.Once{}
-	migrate := func() {
-		goose.SetDialect("postgres")
-		goose.SetBaseFS(embedMigrations)
-
-		// if err := goose.Down(db, "migrations"); err != nil {
-		// 	panic(err)
-		// }
-		if err := goose.Up(db, "migrations"); err != nil {
-			panic(err)
-		}
-	}
-	once.Do(migrate)
 	s.dbConn = db
 	return nil
 }

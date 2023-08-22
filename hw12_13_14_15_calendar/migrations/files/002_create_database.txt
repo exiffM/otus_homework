@@ -1,0 +1,3 @@
+
+-- create database if not exists calendardb; Should exist
+-- drop database if exists calendardb;
