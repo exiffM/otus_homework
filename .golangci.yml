@@ -21,6 +21,8 @@ linters-settings:
          - github.com/spf13/viper
          - github.com/lib/pq
          - github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/
+         - github.com/gorilla/mux
+         - github.com/pressly/goose/v3
 
 issues:
   exclude-rules:

@@ -20,18 +20,29 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	ctx         context.Context
+	host        = "localhost"
+	port        = "1235"
+	dsn         = "user=igor dbname=calendardb password=igor"
+	log         *logger.Logger
+	source      *sqlstorage.Storage
+	application *app.App
+	httpServer  *Server
+	cancel      context.CancelFunc
+)
+
+func init() {
+	ctx, cancel = context.WithCancel(context.Background())
+	log = logger.New("info", os.Stdin)
+	source = sqlstorage.New(dsn)
+	application = app.New(log, source)
+	httpServer = NewServer(host, port, log, application)
+}
+
 func TestComplex(t *testing.T) {
-	time.Sleep(time.Second * 2)
 	migrations.Up()
-	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	host := "localhost"
-	port := "1235"
-	dsn := "user=igor dbname=calendardb password=igor"
-	log := logger.New("info", os.Stdin)
-	source := sqlstorage.New(dsn)
-	application := app.New(log, source)
-	httpServer := NewServer(host, port, log, application)
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
@@ -179,5 +190,4 @@ func TestComplex(t *testing.T) {
 		response.Body.Close()
 	})
 	migrations.Down()
-	time.Sleep(time.Second * 2)
 }

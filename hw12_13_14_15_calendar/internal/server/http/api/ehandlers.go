@@ -160,7 +160,6 @@ func (uh *UpdateHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
-
 	if err != nil {
 		uh.logger.Info("Id conversion error on update event")
 		handler := api.DefaultHandler{
@@ -220,7 +219,6 @@ func (dh *DeleteHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
-
 	if err != nil {
 		dh.logger.Info("Id conversion error on delete event")
 		handler := api.DefaultHandler{

@@ -22,10 +22,8 @@ func Up() error {
 	if err := goose.Up(db, "files"); err != nil {
 		return err
 	}
-	if err := db.Close(); err != nil {
-		return err
-	}
-	return nil
+
+	return db.Close()
 }
 
 func Down() error {
@@ -40,8 +38,5 @@ func Down() error {
 	if err := goose.Down(db, "files"); err != nil {
 		return err
 	}
-	if err := db.Close(); err != nil {
-		return err
-	}
-	return nil
+	return db.Close()
 }

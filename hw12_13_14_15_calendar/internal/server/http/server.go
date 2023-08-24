@@ -6,10 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	mux "github.com/gorilla/mux"
-
 	interfaces "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/interface"
 	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/http/api"
+	"github.com/gorilla/mux"
 )
 
 type Server struct {

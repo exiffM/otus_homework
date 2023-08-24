@@ -20,7 +20,6 @@ import (
 var dsn = "user=igor dbname=calendardb password=igor"
 
 func TestIntegration(t *testing.T) {
-	time.Sleep(time.Second * 2)
 	migrations.Up()
 	gdsn := "localhost:5000"
 	ctx, cancel := context.WithCancel(context.Background())
@@ -127,5 +126,4 @@ func TestIntegration(t *testing.T) {
 	migrations.Down()
 	cancel()
 	wg.Wait()
-	time.Sleep(time.Second * 2)
 }

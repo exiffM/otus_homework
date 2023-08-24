@@ -29,7 +29,7 @@ generate:
 	protoc --go-grpc_out=./internal/server/grpc/pb --go_out=./internal/server/grpc/pb ./api/EventService.proto
 
 test:
-	go test -race ./internal/...
+	go test -p 1 -race ./internal/...
 
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.50.1
