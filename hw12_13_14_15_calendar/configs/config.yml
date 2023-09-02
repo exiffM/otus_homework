@@ -1,0 +1,8 @@
+logger:
+  level: info
+http:
+  host: localhost
+  port: 1235
+storage:
+  type: database #local
+  dsn: "user=igor dbname=calendardb password=igor" #"" #for local - empty
