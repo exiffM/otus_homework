@@ -28,6 +28,7 @@ type EventServiceClient interface {
 	UpdateEvent(ctx context.Context, in *Event, opts ...grpc.CallOption) (*Event, error)
 	DeleteEvent(ctx context.Context, in *Id, opts ...grpc.CallOption) (*empty.Empty, error)
 	Events(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (EventService_EventsClient, error)
+	NotScheduledEvents(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (EventService_NotScheduledEventsClient, error)
 }
 
 type eventServiceClient struct {
@@ -106,6 +107,38 @@ func (x *eventServiceEventsClient) Recv() (*Event, error) {
 	return m, nil
 }
 
+func (c *eventServiceClient) NotScheduledEvents(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (EventService_NotScheduledEventsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &EventService_ServiceDesc.Streams[1], "/calendar.EventService/NotScheduledEvents", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &eventServiceNotScheduledEventsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type EventService_NotScheduledEventsClient interface {
+	Recv() (*Event, error)
+	grpc.ClientStream
+}
+
+type eventServiceNotScheduledEventsClient struct {
+	grpc.ClientStream
+}
+
+func (x *eventServiceNotScheduledEventsClient) Recv() (*Event, error) {
+	m := new(Event)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // EventServiceServer is the server API for EventService service.
 // All implementations must embed UnimplementedEventServiceServer
 // for forward compatibility
@@ -115,6 +148,7 @@ type EventServiceServer interface {
 	UpdateEvent(context.Context, *Event) (*Event, error)
 	DeleteEvent(context.Context, *Id) (*empty.Empty, error)
 	Events(*empty.Empty, EventService_EventsServer) error
+	NotScheduledEvents(*empty.Empty, EventService_NotScheduledEventsServer) error
 	mustEmbedUnimplementedEventServiceServer()
 }
 
@@ -136,6 +170,9 @@ func (UnimplementedEventServiceServer) DeleteEvent(context.Context, *Id) (*empty
 }
 func (UnimplementedEventServiceServer) Events(*empty.Empty, EventService_EventsServer) error {
 	return status.Errorf(codes.Unimplemented, "method Events not implemented")
+}
+func (UnimplementedEventServiceServer) NotScheduledEvents(*empty.Empty, EventService_NotScheduledEventsServer) error {
+	return status.Errorf(codes.Unimplemented, "method NotScheduledEvents not implemented")
 }
 func (UnimplementedEventServiceServer) mustEmbedUnimplementedEventServiceServer() {}
 
@@ -243,6 +280,27 @@ func (x *eventServiceEventsServer) Send(m *Event) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _EventService_NotScheduledEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(empty.Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(EventServiceServer).NotScheduledEvents(m, &eventServiceNotScheduledEventsServer{stream})
+}
+
+type EventService_NotScheduledEventsServer interface {
+	Send(*Event) error
+	grpc.ServerStream
+}
+
+type eventServiceNotScheduledEventsServer struct {
+	grpc.ServerStream
+}
+
+func (x *eventServiceNotScheduledEventsServer) Send(m *Event) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // EventService_ServiceDesc is the grpc.ServiceDesc for EventService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -271,6 +329,11 @@ var EventService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Events",
 			Handler:       _EventService_Events_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "NotScheduledEvents",
+			Handler:       _EventService_NotScheduledEvents_Handler,
 			ServerStreams: true,
 		},
 	},

@@ -1,4 +1,4 @@
-package client
+package rpcclient
 
 import (
 	"context"
@@ -6,7 +6,8 @@ import (
 	"io"
 	"log"
 
-	eventrpcapi "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/pb"
+	eventrpcapi "hw12_13_14_15_calendar/internal/server/grpc/pb"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -56,6 +57,25 @@ func (c *Client) DeleteEvent(ctx context.Context, id *eventrpcapi.Id) (*emptypb.
 
 func (c *Client) Events(ctx context.Context) ([]*eventrpcapi.Event, error) {
 	events, err := c.grpcClient.Events(ctx, &emptypb.Empty{}, localOpts...)
+	if err != nil {
+		return nil, err
+	}
+	pbEvents := make([]*eventrpcapi.Event, 0)
+	for {
+		pbEvent, err := events.Recv()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		pbEvents = append(pbEvents, pbEvent)
+	}
+	return pbEvents, nil
+}
+
+func (c *Client) NotScheduledEvents(ctx context.Context) ([]*eventrpcapi.Event, error) {
+	events, err := c.grpcClient.NotScheduledEvents(ctx, &emptypb.Empty{}, localOpts...)
 	if err != nil {
 		return nil, err
 	}

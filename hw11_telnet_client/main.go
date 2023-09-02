@@ -98,7 +98,7 @@ func main() {
 			cancel()
 			client.Close()
 		}()
-		stdinBuff := bufio.NewScanner(os.Stdin)
+		stdinBuff := bufio.NewScanner(os.Stdout)
 
 		for {
 			// select {

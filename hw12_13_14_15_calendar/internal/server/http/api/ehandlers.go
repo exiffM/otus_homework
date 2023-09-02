@@ -5,9 +5,10 @@ import (
 	"strconv"
 	"strings"
 
-	iface "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/interface"
-	api "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/http/api/default"
-	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
+	iface "hw12_13_14_15_calendar/internal/interface"
+	api "hw12_13_14_15_calendar/internal/server/http/api/default"
+	mdl "hw12_13_14_15_calendar/internal/storage"
+
 	"github.com/gorilla/mux"
 	"github.com/mailru/easyjson"
 )

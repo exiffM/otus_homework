@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjsonF642ad3eDecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalStorage(in *jlexer.Lexer, out *Event) {
+func easyjsonF642ad3eDecodeHw12131415CalendarInternalStorage(in *jlexer.Lexer, out *Event) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -50,6 +50,8 @@ func easyjsonF642ad3eDecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternal
 			out.Description = string(in.String())
 		case "NotificationTime":
 			out.NotificationTime = int(in.Int())
+		case "Scheduled":
+			out.Scheduled = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -60,7 +62,7 @@ func easyjsonF642ad3eDecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternal
 		in.Consumed()
 	}
 }
-func easyjsonF642ad3eEncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalStorage(out *jwriter.Writer, in Event) {
+func easyjsonF642ad3eEncodeHw12131415CalendarInternalStorage(out *jwriter.Writer, in Event) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -94,29 +96,34 @@ func easyjsonF642ad3eEncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternal
 		out.RawString(prefix)
 		out.Int(int(in.NotificationTime))
 	}
+	{
+		const prefix string = ",\"Scheduled\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.Scheduled))
+	}
 	out.RawByte('}')
 }
 
 // MarshalJSON supports json.Marshaler interface
 func (v Event) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonF642ad3eEncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalStorage(&w, v)
+	easyjsonF642ad3eEncodeHw12131415CalendarInternalStorage(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Event) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonF642ad3eEncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalStorage(w, v)
+	easyjsonF642ad3eEncodeHw12131415CalendarInternalStorage(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Event) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonF642ad3eDecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalStorage(&r, v)
+	easyjsonF642ad3eDecodeHw12131415CalendarInternalStorage(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Event) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonF642ad3eDecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalStorage(l, v)
+	easyjsonF642ad3eDecodeHw12131415CalendarInternalStorage(l, v)
 }

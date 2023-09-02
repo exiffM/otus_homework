@@ -1,4 +1,4 @@
-package server
+package rpcserver
 
 import (
 	"context"
@@ -7,12 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/app"
-	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/logger"
-	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/client"
-	eventrpcapi "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/pb"
-	sqlstorage "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage/sql"
-	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/migrations"
+	"hw12_13_14_15_calendar/internal/app"
+	"hw12_13_14_15_calendar/internal/logger"
+	rpcclient "hw12_13_14_15_calendar/internal/server/grpc/client"
+	eventrpcapi "hw12_13_14_15_calendar/internal/server/grpc/pb"
+	sqlstorage "hw12_13_14_15_calendar/internal/storage/sql"
+	"hw12_13_14_15_calendar/migrations"
+
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -45,7 +46,7 @@ func TestIntegration(t *testing.T) {
 	}()
 	time.Sleep(5 * time.Second)
 
-	gclient := client.Client{}
+	gclient := rpcclient.Client{}
 	gclient.Connect(gdsn)
 	log.Info("Client was created and connected")
 	// Create

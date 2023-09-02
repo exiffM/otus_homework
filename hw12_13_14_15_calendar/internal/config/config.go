@@ -4,6 +4,12 @@ package config
 // Организация конфига в main принуждает нас сужать API компонентов, использовать
 // при их конструировании только необходимые параметры, а также уменьшает вероятность циклической зависимости.
 type HTTPConf struct {
+	Host              string
+	Port              string
+	ReadHeaderTimeout int
+}
+
+type RPCConf struct {
 	Host string
 	Port string
 }
@@ -19,6 +25,7 @@ type StorageConf struct {
 
 type Config struct {
 	HTTP    HTTPConf
+	RPC     RPCConf
 	Logger  LoggerConf
 	Storage StorageConf
 }

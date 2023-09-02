@@ -1,12 +1,13 @@
-package server
+package rpcserver
 
 import (
 	"context"
 	"net"
 
-	interfaces "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/interface"
-	eventrpcapi "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/pb"
-	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
+	interfaces "hw12_13_14_15_calendar/internal/interface"
+	eventrpcapi "hw12_13_14_15_calendar/internal/server/grpc/pb"
+	mdl "hw12_13_14_15_calendar/internal/storage"
+
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -41,6 +42,7 @@ type GRPCServer struct {
 	logger interfaces.Logger
 	app    interfaces.Application
 	server *grpc.Server
+	lis    net.Listener
 }
 
 func NewGRPCServer(
@@ -98,8 +100,24 @@ func (s *GRPCServer) Events(_ *emptypb.Empty, stream eventrpcapi.EventService_Ev
 	return nil
 }
 
+func (s *GRPCServer) NotScheduledEvents(_ *emptypb.Empty,
+	stream eventrpcapi.EventService_NotScheduledEventsServer) error {
+	events, err := s.app.NotScheduledEvents()
+	if err != nil {
+		return err
+	}
+	for _, event := range events {
+		pbEvent := ConvertFromEvent(event)
+		if err := stream.Send(&pbEvent); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *GRPCServer) Start(address string) error {
-	lis, err := net.Listen("tcp", address)
+	var err error
+	s.lis, err = net.Listen("tcp", address)
 	if err != nil {
 		return err
 	}
@@ -110,17 +128,21 @@ func (s *GRPCServer) Start(address string) error {
 	eventrpcapi.RegisterEventServiceServer(gRPCServer, s)
 	s.server = gRPCServer
 	s.logger.Info("GRPCServer.Start()")
-	return s.server.Serve(lis)
+	err = s.server.Serve(s.lis)
+	return err
 }
 
 func (s *GRPCServer) Stop() {
 	s.logger.Info("GRPCServer.Stop()")
 	s.server.Stop()
+	s.logger.Error("After RPC stop!")
 }
 
 func (s *GRPCServer) GracefulStop() {
 	s.logger.Info("GRPCServer.GracefulStop()")
+	// s.lis.Close()
 	s.server.GracefulStop()
+	s.logger.Error("After RPC Graceful stop!")
 }
 
 func UnaryInterceptor(logger interfaces.Logger) func(

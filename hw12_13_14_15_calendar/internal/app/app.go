@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 
-	interfaces "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/interface"
-	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
+	interfaces "hw12_13_14_15_calendar/internal/interface"
+	mdl "hw12_13_14_15_calendar/internal/storage"
 )
 
 type App struct {
@@ -59,4 +59,12 @@ func (a *App) Events() ([]mdl.Event, error) {
 	}
 	defer a.storage.Close()
 	return a.storage.Events()
+}
+
+func (a *App) NotScheduledEvents() ([]mdl.Event, error) {
+	if err := a.storage.Connect(); err != nil {
+		return nil, err
+	}
+	defer a.storage.Close()
+	return a.storage.NotScheduledEvents()
 }

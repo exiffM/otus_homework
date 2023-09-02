@@ -5,7 +5,7 @@ import (
 	"sort"
 	"sync"
 
-	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
+	mdl "hw12_13_14_15_calendar/internal/storage"
 )
 
 type LocalStorage = map[int]mdl.Event
@@ -91,6 +91,22 @@ func (s *Storage) Events() ([]mdl.Event, error) {
 	defer s.mu.RUnlock()
 	for _, event := range s.data {
 		result = append(result, event)
+	}
+	sort.Slice(result, func(i, j int) bool { return result[i].ID < result[j].ID })
+	return result, nil
+}
+
+func (s *Storage) NotScheduledEvents() ([]mdl.Event, error) {
+	if s.data == nil {
+		return nil, errCreate
+	}
+	result := make([]mdl.Event, 0)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, event := range s.data {
+		if !event.Scheduled {
+			result = append(result, event)
+		}
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].ID < result[j].ID })
 	return result, nil

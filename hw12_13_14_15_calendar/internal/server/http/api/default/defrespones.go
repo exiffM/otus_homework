@@ -1,6 +1,6 @@
 package api
 
-import mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
+import mdl "hw12_13_14_15_calendar/internal/storage"
 
 //easyjson:json
 type DefaultResponse struct {

@@ -10,12 +10,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/app"
-	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/logger"
-	api "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/http/api/default"
-	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
-	sqlstorage "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage/sql"
-	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/migrations"
+	"hw12_13_14_15_calendar/internal/app"
+	"hw12_13_14_15_calendar/internal/logger"
+	api "hw12_13_14_15_calendar/internal/server/http/api/default"
+	mdl "hw12_13_14_15_calendar/internal/storage"
+	sqlstorage "hw12_13_14_15_calendar/internal/storage/sql"
+	"hw12_13_14_15_calendar/migrations"
+
 	"github.com/mailru/easyjson"
 	"github.com/stretchr/testify/require"
 )
@@ -34,23 +35,24 @@ var (
 
 func init() {
 	ctx, cancel = context.WithCancel(context.Background())
-	log = logger.New("info", os.Stdin)
+	log = logger.New("info", os.Stdout)
 	source = sqlstorage.New(dsn)
 	application = app.New(log, source)
-	httpServer = NewServer(host, port, log, application)
+	httpServer = NewServer(host, port, 10, log, application)
 }
 
 func TestComplex(t *testing.T) {
-	migrations.Up()
+	what := migrations.Up()
+	_ = what
 	defer cancel()
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		httpServer.Start(ctx)
+		httpServer.Start()
 	}()
 	defer func() {
-		wg.Done()
+		wg.Wait()
 		httpServer.Stop(ctx)
 	}()
 	time.Sleep(5 * time.Second)
@@ -190,4 +192,5 @@ func TestComplex(t *testing.T) {
 		response.Body.Close()
 	})
 	migrations.Down()
+	// wg.Wait()
 }
