@@ -2,6 +2,7 @@ package storage
 
 import "time"
 
+//easyjson:json
 type Event struct {
 	ID               int
 	Title            string

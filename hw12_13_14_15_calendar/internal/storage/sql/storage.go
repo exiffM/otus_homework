@@ -1,7 +1,6 @@
 package sqlstorage
 
 import (
-	"context"
 	"database/sql"
 
 	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
@@ -17,9 +16,9 @@ func New(dsn string) *Storage {
 	return &Storage{dsn: dsn}
 }
 
-func (s *Storage) Connect(ctx context.Context) error {
+func (s *Storage) Connect() error {
 	// TODO
-	_ = ctx
+	// _ = ctx
 	db, err := sql.Open("postgres", s.dsn)
 	if err != nil {
 		return err
@@ -28,9 +27,9 @@ func (s *Storage) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (s *Storage) Close(ctx context.Context) error {
+func (s *Storage) Close() error {
 	// TODO
-	_ = ctx
+	// _ = ctx
 	if s.dbConn == nil {
 		return nil
 	}
@@ -41,7 +40,7 @@ func (s *Storage) Close(ctx context.Context) error {
 	return nil
 }
 
-func (s *Storage) CreateEvent(event mdl.Event) error {
+func (s *Storage) CreateEvent(event mdl.Event) (mdl.Event, error) {
 	sqlStatement := `
 	INSERT INTO events(
 		"title", "start", "duration", "descr", "notification"
@@ -51,9 +50,9 @@ func (s *Storage) CreateEvent(event mdl.Event) error {
 		event.Title, event.Start, event.Duration, event.Description, event.NotificationTime,
 	).Scan(&(event.ID))
 	if err != nil {
-		return err
+		return mdl.Event{}, err
 	}
-	return nil
+	return event, nil
 }
 
 func (s *Storage) SelectEvent(id int) (mdl.Event, error) {
@@ -69,7 +68,7 @@ func (s *Storage) SelectEvent(id int) (mdl.Event, error) {
 	return event, nil
 }
 
-func (s *Storage) UpdateEvent(event mdl.Event) error {
+func (s *Storage) UpdateEvent(event mdl.Event) (mdl.Event, error) {
 	sqlStatement := `
 	UPDATE events 
 	SET "title"=$1, "start"=$2, "duration"=$3, "descr"=$4, "notification"=$5
@@ -77,9 +76,9 @@ func (s *Storage) UpdateEvent(event mdl.Event) error {
 	_, err := s.dbConn.Exec(sqlStatement, event.Title, event.Start,
 		event.Duration, event.Description, event.NotificationTime, event.ID)
 	if err != nil {
-		return err
+		return mdl.Event{}, err
 	}
-	return nil
+	return event, nil
 }
 
 func (s *Storage) DeleteEvent(id int) error {

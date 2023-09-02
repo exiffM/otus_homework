@@ -1,11 +1,11 @@
 package sqlstorage
 
 import (
-	"context"
 	"testing"
 	"time"
 
 	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/migrations"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,14 +14,14 @@ import (
 var dsn = "user=igor dbname=calendardb password=igor"
 
 func TestStorage(t *testing.T) {
+	migrations.Up()
 	storage := New(dsn)
-	ctx := context.TODO()
 	loc, err := time.LoadLocation("Europe/Moscow")
 	_ = loc // hotfix for tests (TODO: accept location on application level)
 	_ = err
 
 	t.Run("connect to database", func(t *testing.T) {
-		err := storage.Connect(ctx)
+		err := storage.Connect()
 		require.Nil(t, err, "Failed! Actual error is not nil!")
 	})
 
@@ -34,7 +34,7 @@ func TestStorage(t *testing.T) {
 			Description:      "My first event in this calendar",
 			NotificationTime: int(time.Minute * 15),
 		}
-		err := storage.CreateEvent(event)
+		_, err := storage.CreateEvent(event)
 		require.Nil(t, err, "Failed! Actual error is not nil!")
 		nEvent, err := storage.SelectEvent(1)
 		require.Nil(t, err, "Failed! Actual error is not nil!")
@@ -50,7 +50,7 @@ func TestStorage(t *testing.T) {
 			Description:      "Other description of event",
 			NotificationTime: int(time.Minute * 15),
 		}
-		err := storage.UpdateEvent(event)
+		_, err := storage.UpdateEvent(event)
 		require.Nil(t, err, "Failed! Error is not nil!")
 
 		nEvent, _ := storage.SelectEvent(1)
@@ -69,7 +69,7 @@ func TestStorage(t *testing.T) {
 			Description:      "Other description of event",
 			NotificationTime: int(time.Minute * 15),
 		}
-		err := storage.CreateEvent(event)
+		_, err := storage.CreateEvent(event)
 		require.Nil(t, err, "Failed! Error is not nil")
 
 		err = storage.DeleteEvent(1)
@@ -88,4 +88,5 @@ func TestStorage(t *testing.T) {
 		require.Equal(t, []mdl.Event{expectedEvent},
 			events, "Failed! Event slices are not equal!")
 	})
+	migrations.Down()
 }

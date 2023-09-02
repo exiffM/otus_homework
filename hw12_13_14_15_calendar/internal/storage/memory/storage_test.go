@@ -23,7 +23,7 @@ func TestStorage(t *testing.T) {
 			Description:      "My first event in this calendar",
 			NotificationTime: int(time.Minute * 15),
 		}
-		err := storage.CreateEvent(event)
+		_, err := storage.CreateEvent(event)
 		require.Nil(t, err, "Failed! Actual error is not nil!")
 		require.Equal(t, event, storage.data[0], "Failed! Events aren't equal!")
 	})
@@ -47,11 +47,11 @@ func TestStorage(t *testing.T) {
 			Description:      "Other description of event",
 			NotificationTime: int(time.Minute * 15),
 		}
-		err := storage.UpdateEvent(event)
+		_, err := storage.UpdateEvent(event)
 		require.Nil(t, err, "Failed! Error is not nil!")
 
 		event.ID = 1
-		err = storage.UpdateEvent(event)
+		_, err = storage.UpdateEvent(event)
 		require.ErrorIs(t, err, errExist, "Failed! Actual error is %q", err)
 	})
 
@@ -64,7 +64,7 @@ func TestStorage(t *testing.T) {
 			Description:      "Other description of event",
 			NotificationTime: int(time.Minute * 15),
 		}
-		err := storage.CreateEvent(event)
+		_, err := storage.CreateEvent(event)
 		require.Nil(t, err, "Failed! Error is not nil")
 
 		err = storage.DeleteEvent(0)
@@ -94,7 +94,7 @@ func TestStorageInvalid(t *testing.T) {
 			Description:      "My first event in this calendar",
 			NotificationTime: int(time.Minute * 15),
 		}
-		err := storage.CreateEvent(event)
+		_, err := storage.CreateEvent(event)
 		require.ErrorIs(t, err, errCreate, "Failed! Actual error is %q", err)
 	})
 
@@ -117,11 +117,11 @@ func TestStorageInvalid(t *testing.T) {
 			Description:      "Other description of event",
 			NotificationTime: int(time.Minute * 15),
 		}
-		err := storage.UpdateEvent(event)
+		_, err := storage.UpdateEvent(event)
 		require.ErrorIs(t, err, errCreate, "Failed! Actual error is %q", err)
 
 		event.ID = 1
-		err = storage.UpdateEvent(event)
+		_, err = storage.UpdateEvent(event)
 		require.ErrorIs(t, err, errCreate, "Failed! Actual error is %q", err)
 	})
 
@@ -134,7 +134,7 @@ func TestStorageInvalid(t *testing.T) {
 			Description:      "Other description of event",
 			NotificationTime: int(time.Minute * 15),
 		}
-		err := storage.CreateEvent(event)
+		_, err := storage.CreateEvent(event)
 		require.ErrorIs(t, err, errCreate, "Failed! Actual error is %q", err)
 
 		err = storage.DeleteEvent(0)

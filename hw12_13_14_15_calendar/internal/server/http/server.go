@@ -2,28 +2,49 @@ package internalhttp
 
 import (
 	"context"
+	"net"
 	"net/http"
+	"time"
 
 	interfaces "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/interface"
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/http/api"
+	"github.com/gorilla/mux"
 )
 
 type Server struct {
-	host   string
-	port   string
+	server *http.Server
 	logger interfaces.Logger
 	app    interfaces.Application
 }
 
 func NewServer(h, p string, l interfaces.Logger, a interfaces.Application) *Server {
-	return &Server{h, p, l, a}
+	mux := mux.NewRouter().StrictSlash(true)
+	mux.Handle("/", loggingMiddleware(http.HandlerFunc(handleTeapot), l))
+	mux.Handle("/api/calendar/event", api.NewCreateHandler(l, a))              // POST
+	mux.Handle("/api/calendar/events/select/{id}", api.NewSelectHandler(l, a)) // GET
+	mux.Handle("/api/calendar/events/update/{id}", api.NewUpdateHandler(l, a)) // PUT
+	mux.Handle("/api/calendar/events/delete/{id}", api.NewDeleteHandler(l, a)) // DELETE
+	mux.Handle("/api/calendar/events", api.NewEventsHandler(l, a))             // GET
+	s := http.Server{
+		Addr:              net.JoinHostPort(h, p),
+		ReadHeaderTimeout: 10 * time.Second,
+		Handler:           mux,
+	}
+	return &Server{&s, l, a}
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	_ = ctx
-	// <-ctx.Done()
+	go func() {
+		<-ctx.Done()
+		curCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+
+		if err := s.Stop(curCtx); err != nil {
+			s.logger.Info("Server shutdown")
+		}
+	}()
 	s.logger.Info("Server.Start()")
-	http.Handle("/", loggingMiddleware(http.HandlerFunc(handleTeapot), s.logger))
-	err := http.ListenAndServe(s.host+":"+s.port, nil) //nolint: gosec
+	err := http.ListenAndServe(s.server.Addr, s.server.Handler) //nolint: gosec
 	if err != nil {
 		return err
 	}
@@ -36,8 +57,10 @@ func handleTeapot(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (s *Server) Stop(ctx context.Context) error {
-	// TODO
-	_ = ctx
-	s.logger.Info("Server.Start()")
+	s.logger.Info("Server.Stop()")
+	err := s.server.Shutdown(ctx)
+	if err != nil {
+		return err
+	}
 	return nil
 }
