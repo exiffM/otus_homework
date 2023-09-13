@@ -1,7 +1,7 @@
 source:
-  connection-string: amqp://guest:guest@localhost:5672/
+  connectionstring: amqp://guest:guest@localhost:5672/
   queuename: queue_events
-  exchange: events
+  exchangename: events
   key: amq.notification
   tag: simpleConsumer
-logger: error
+logglevel: error

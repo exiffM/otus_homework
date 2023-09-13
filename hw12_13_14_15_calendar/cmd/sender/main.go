@@ -40,6 +40,7 @@ func main() {
 
 	wg := sync.WaitGroup{}
 	onErrOnce := sync.Once{}
+	wg.Add(2)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt,
 		os.Kill)
@@ -62,4 +63,5 @@ func main() {
 			onErrOnce.Do(cancel)
 		}
 	}()
+	wg.Wait()
 }

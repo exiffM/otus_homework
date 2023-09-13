@@ -35,8 +35,8 @@ func confirmOne(confirms <-chan amqp.Confirmation, log *logger.Logger) {
 
 func (s *Scheduler) Start(ctx context.Context) error {
 	s.ctx = ctx
-	s.conn, s.err = amqp.Dial(s.cfg.Dest.ConnectionString)
-	log := logger.New(s.cfg.LoggLevel, os.Stdout)
+	s.conn, s.err = amqp.Dial(s.cfg.Target.ConnectionString)
+	log := logger.New(s.cfg.Logger, os.Stdout)
 	if s.err != nil {
 		log.Error("Failed to connect to rabbitmq")
 		return s.err
@@ -49,7 +49,7 @@ func (s *Scheduler) Start(ctx context.Context) error {
 	}
 
 	s.err = s.ch.ExchangeDeclare(
-		s.cfg.Dest.ExchangeName,
+		s.cfg.Target.ExchangeName,
 		"direct",
 		true,
 		false,
@@ -69,7 +69,8 @@ func (s *Scheduler) Start(ctx context.Context) error {
 
 	// Create rpc client connect and get events list
 	src := rpcclient.Client{}
-	src.Connect(s.cfg.Src.ConnectionString)
+	err := src.Connect(s.cfg.Source.ConnectionString)
+	_ = err
 
 	// Cycling in default case and checking unscheduled events every timeout value
 	// Then mark events as scheduled and publish in rqbbit
@@ -78,18 +79,19 @@ FORCYCLE:
 		select {
 		case <-ctx.Done():
 			break FORCYCLE
-		default:
+		case <-time.After(time.Second * time.Duration(s.cfg.Timeout)):
 			rpcevents, err := src.NotScheduledEvents(ctx)
 			if err != nil {
-				log.Error("Error calling rpc method gets uscheduled events")
+				log.Error("Error calling rpc method gets unscheduled events")
 			} else {
 				for _, rpcevent := range rpcevents {
 					event := rpcs.ConvertToEvent(*rpcevent)
-					if time.Now().Add(time.Duration(event.Duration)) == event.Start {
+					if time.Now().Add(time.Duration(event.Duration)*time.Minute).Compare(event.Start) >= 0 {
 						// Mark as scheduled and publish message
 						event.Scheduled = true
 						*rpcevent = rpcs.ConvertFromEvent(event)
-						_, err := src.UpdateEvent(s.ctx, rpcevent)
+						e, err := src.UpdateEvent(s.ctx, rpcevent)
+						_ = e
 						if err != nil {
 							log.Error("Error calling rpc method updates uscheduled event")
 						}
@@ -99,8 +101,8 @@ FORCYCLE:
 						}
 						s.err = s.ch.PublishWithContext(
 							s.ctx,
-							s.cfg.Dest.ExchangeName,
-							s.cfg.Dest.Key,
+							s.cfg.Target.ExchangeName,
+							s.cfg.Target.Key,
 							false,
 							false,
 							amqp.Publishing{
@@ -119,7 +121,6 @@ FORCYCLE:
 					}
 				}
 			}
-			time.Sleep(time.Second * time.Duration(s.cfg.Timeout))
 		}
 	}
 	return nil

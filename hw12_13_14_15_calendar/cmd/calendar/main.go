@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"hw12_13_14_15_calendar/internal/app"
@@ -15,10 +16,10 @@ import (
 	"hw12_13_14_15_calendar/internal/logger"
 	rpcserver "hw12_13_14_15_calendar/internal/server/grpc/server"
 	internalhttp "hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "hw12_13_14_15_calendar/internal/storage/sql"
+	"hw12_13_14_15_calendar/migrations"
 
 	"github.com/spf13/viper"
-	"golang.org/x/sync/errgroup"
 )
 
 var configFilePath string
@@ -30,10 +31,10 @@ func init() {
 func main() {
 	flag.Parse()
 
-	// if flag.Arg(0) == "version" {
-	// 	printVersion()
-	// 	return
-	// }
+	if flag.Arg(0) == "version" {
+		printVersion()
+		return
+	}
 
 	file, err := os.Open(configFilePath)
 	if err != nil {
@@ -54,8 +55,18 @@ func main() {
 
 	logg := logger.New(config.Logger.Level, os.Stdout)
 
-	storage := memorystorage.New()
+	storage := sqlstorage.New(config.Storage.DSN)
 	calendar := app.New(logg, storage)
+
+	if err := migrations.Up("files"); err != nil {
+		log.Println("Unable to up migration in \"files\"")
+	}
+	if err := migrations.Up("inserting"); err != nil {
+		log.Println("Unable to up migration in \"inserting\"")
+	}
+	// terr := migrations.Up("files")
+	// _ = terr
+	// terr = migrations.Up("preparedb")
 
 	server := internalhttp.NewServer(
 		config.HTTP.Host,
@@ -67,95 +78,40 @@ func main() {
 
 	RPCServer := rpcserver.NewGRPCServer(logg, calendar)
 
-	// ctx, cancel := context.WithCancel(context.Background())
-	// go func() {
-	// 	c := make(chan os.Signal, 1)
-	// 	signal.Notify(c, syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT)
-	// 	<-c
-	// 	cancel()
-	// }()
-	ctx, stop := signal.NotifyContext(context.Background(),
-		syscall.SIGINT,
-		syscall.SIGHUP,
-		syscall.SIGTERM,
-		syscall.SIGQUIT)
+	ctx, cancel := context.WithCancel(context.Background())
 
-	g, gCtx := errgroup.WithContext(ctx)
-	g.Go(func() error {
-		return server.Start()
-	})
-	g.Go(func() error {
-		return RPCServer.Start(net.JoinHostPort(config.RPC.Host, config.RPC.Port))
-	})
-	g.Go(func() error {
-		<-gCtx.Done()
-		RPCServer.GracefulStop()
-		return server.Stop(context.Background())
-	})
-
-	if err := g.Wait(); err != nil {
-		fmt.Printf("exit reason: %s \n", err)
-	}
-
-	stop()
-
-	// ctx, cancel := signal.NotifyContext(context.Background(),
-	// 	syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM)
-	// defer cancel()
-
-	// wg := sync.WaitGroup{}
-	// onErrorStopOnce := sync.Once{}
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	<-ctx.Done()
-
-	// 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	// 	defer cancel()
-
-	// 	if err := server.Stop(ctx); err != nil {
-	// 		logg.Error("failed to stop http server: " + err.Error())
-	// 	}
-
-	// 	RPCServer.GracefulStop()
-	// }()
-	// // // Stop http server
-	// // go func() {
-	// // 	defer wg.Done()
-	// // 	<-ctx.Done()
-	// // 	fmt.Println("HTTP stopped")
-	// // 	if err := server.Stop(ctx); err != nil {
-	// // 		fmt.Println(err)
-	// // 	}
-	// // }()
-	// // // Stop grpc server
-	// // go func() {
-	// // 	defer wg.Done()
-	// // 	<-ctx.Done()
-	// // 	fmt.Println("RPC stopped")
-	// // 	RPCServer.Stop()
-	// // }()
-
+	wg := sync.WaitGroup{}
+	onErrorStopOnce := sync.Once{}
 	// // Start http server
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	if err := server.Start(); err != nil {
-	// 		logg.Error("failed to start HTTP server: " + err.Error())
-	// 		onErrorStopOnce.Do(cancel)
-	// 	}
-	// }()
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		if err := server.Start(); err != nil {
+			logg.Error("failed to start HTTP server: " + err.Error())
+			onErrorStopOnce.Do(cancel)
+		}
+	}()
 
 	// // Start grpc server
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	if err := RPCServer.Start(net.JoinHostPort(config.RPC.Host, config.RPC.Port)); err != nil {
-	// 		logg.Error("failed to start RPC server: " + err.Error())
-	// 		onErrorStopOnce.Do(cancel)
-	// 	}
-	// }()
-	// logg.Error("Before wait")
-	// wg.Wait()
-	// logg.Error("After wait")
+	go func() {
+		defer wg.Done()
+		if err := RPCServer.Start(net.JoinHostPort(config.RPC.Host, config.RPC.Port)); err != nil {
+			logg.Error("failed to start RPC server: " + err.Error())
+			onErrorStopOnce.Do(cancel)
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT)
+	<-c
+
+	if err := server.Stop(ctx); err != nil {
+		fmt.Println(err)
+	}
+	RPCServer.Stop()
+	onErrorStopOnce.Do(cancel)
+	wg.Wait()
+	// migrations.Down("preparedb")
+	migrations.Down("inserting")
+	// migrations.Down("files")
 }

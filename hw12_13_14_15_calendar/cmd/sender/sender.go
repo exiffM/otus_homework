@@ -26,7 +26,7 @@ func NewSender(configuration SenderCfg) *Sender {
 
 func (s *Sender) Start(ctx context.Context) error {
 	s.ctx = ctx
-	s.conn, s.err = amqp.Dial(s.cfg.Src.ConnectionString)
+	s.conn, s.err = amqp.Dial(s.cfg.Source.ConnectionString)
 	log := logger.New(s.cfg.LoggLevel, os.Stdout)
 	if s.err != nil {
 		log.Error("Failed to connect to rabbitmq")
@@ -40,7 +40,7 @@ func (s *Sender) Start(ctx context.Context) error {
 	}
 
 	s.err = s.ch.ExchangeDeclare(
-		s.cfg.Src.ExchangeName,
+		s.cfg.Source.ExchangeName,
 		"direct",
 		true,
 		false,
@@ -54,7 +54,7 @@ func (s *Sender) Start(ctx context.Context) error {
 	}
 
 	s.que, s.err = s.ch.QueueDeclare(
-		s.cfg.Src.QueueName,
+		s.cfg.Source.QueueName,
 		true,
 		false,
 		false,
@@ -67,9 +67,9 @@ func (s *Sender) Start(ctx context.Context) error {
 	}
 
 	s.err = s.ch.QueueBind(
-		s.cfg.Src.QueueName,
-		s.cfg.Src.Key,
-		s.cfg.Src.ExchangeName,
+		s.cfg.Source.QueueName,
+		s.cfg.Source.Key,
+		s.cfg.Source.ExchangeName,
 		false,
 		nil,
 	)
@@ -79,8 +79,8 @@ func (s *Sender) Start(ctx context.Context) error {
 	}
 
 	deliveds, err := s.ch.Consume(
-		s.cfg.Src.QueueName,
-		s.cfg.Src.Tag,
+		s.cfg.Source.QueueName,
+		s.cfg.Source.Tag,
 		false,
 		false,
 		false,
@@ -116,5 +116,5 @@ FORCYCLE:
 }
 
 func (s *Sender) Stop() error {
-	return s.ch.Cancel(s.cfg.Src.Tag, true)
+	return s.ch.Cancel(s.cfg.Source.Tag, true)
 }

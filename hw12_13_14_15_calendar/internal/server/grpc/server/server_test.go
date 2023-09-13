@@ -21,7 +21,7 @@ import (
 var dsn = "user=igor dbname=calendardb password=igor"
 
 func TestIntegration(t *testing.T) {
-	migrations.Up()
+	migrations.Up("files")
 	gdsn := "localhost:5000"
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -124,7 +124,7 @@ func TestIntegration(t *testing.T) {
 	log.Info("%+v", events)
 	log.Info("All test passed successfully")
 	gclient.Close()
-	migrations.Down()
+	migrations.Down("files")
 	cancel()
 	wg.Wait()
 }

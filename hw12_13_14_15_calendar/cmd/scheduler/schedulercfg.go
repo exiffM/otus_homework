@@ -11,10 +11,10 @@ type SchedulerTarget struct {
 }
 
 type SchedulerCfg struct {
-	Src       SchedulerSource
-	Dest      SchedulerTarget
-	Timeout   int
-	LoggLevel string
+	Source  SchedulerSource
+	Target  SchedulerTarget
+	Timeout int
+	Logger  string
 }
 
 func NewSchedulerConfig() *SchedulerCfg {

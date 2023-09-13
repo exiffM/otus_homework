@@ -96,7 +96,7 @@ func (s *Storage) Events() ([]mdl.Event, error) {
 	var event mdl.Event
 	result := make([]mdl.Event, 0)
 	sqlStatement := `
-	SELECT * FROM events`
+	SELECT * FROM events;`
 	rows, err := s.dbConn.Query(sqlStatement)
 	if err != nil {
 		return nil, err
@@ -117,7 +117,7 @@ func (s *Storage) NotScheduledEvents() ([]mdl.Event, error) {
 	var event mdl.Event
 	result := make([]mdl.Event, 0)
 	sqlStatement := `
-	SELECT * FROM events WHERE scheduled=$1`
+	SELECT * FROM events WHERE scheduled=$1;`
 	rows, err := s.dbConn.Query(sqlStatement, false)
 	if err != nil {
 		return nil, err

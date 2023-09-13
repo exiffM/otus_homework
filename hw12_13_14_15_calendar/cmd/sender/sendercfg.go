@@ -9,7 +9,7 @@ type SenderSource struct {
 }
 
 type SenderCfg struct {
-	Src       SenderSource
+	Source    SenderSource
 	LoggLevel string
 }
 

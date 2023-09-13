@@ -22,6 +22,7 @@ func ConvertToEvent(e eventrpcapi.Event) mdl.Event {
 		Duration:         int(e.Duration),
 		Description:      e.Description,
 		NotificationTime: int(e.Notification),
+		Scheduled:        e.Scheduled,
 	}
 }
 
@@ -34,6 +35,7 @@ func ConvertFromEvent(e mdl.Event) eventrpcapi.Event {
 		Duration:     int32(e.Duration),
 		Description:  e.Description,
 		Notification: int32(e.NotificationTime),
+		Scheduled:    e.Scheduled,
 	}
 }
 

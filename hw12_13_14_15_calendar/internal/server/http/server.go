@@ -36,17 +36,8 @@ func NewServer(h, p string, rht int, l interfaces.Logger, a interfaces.Applicati
 }
 
 func (s *Server) Start() error {
-	// go func() {
-	// 	<-ctx.Done()
-	// 	curCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	// 	defer cancel()
-
-	// 	if err := s.Stop(curCtx); err != nil {
-	// 		s.logger.Info("Server shutdown")
-	// 	}
-	// }()
 	s.logger.Info("Server.Start()")
-	err := http.ListenAndServe(s.server.Addr, s.server.Handler) //nolint: gosec
+	err := s.server.ListenAndServe() //nolint: gosec
 	if err != nil {
 		return err
 	}

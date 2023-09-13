@@ -42,18 +42,13 @@ func init() {
 }
 
 func TestComplex(t *testing.T) {
-	what := migrations.Up()
+	what := migrations.Up("files")
 	_ = what
-	defer cancel()
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		httpServer.Start()
-	}()
-	defer func() {
-		wg.Wait()
-		httpServer.Stop(ctx)
 	}()
 	time.Sleep(5 * time.Second)
 	client := &http.Client{}
@@ -191,6 +186,8 @@ func TestComplex(t *testing.T) {
 			"Error in response! Actual response is: %q", defResponse.Error)
 		response.Body.Close()
 	})
-	migrations.Down()
-	// wg.Wait()
+	migrations.Down("files")
+	httpServer.Stop(ctx)
+	cancel()
+	wg.Wait()
 }

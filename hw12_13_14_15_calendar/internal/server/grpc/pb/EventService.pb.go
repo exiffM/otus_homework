@@ -6,8 +6,8 @@ package eventrpcapi
 import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
-	_ "github.com/golang/protobuf/ptypes/empty"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	_ "google.golang.org/protobuf/types/known/emptypb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	math "math"
 )
 
@@ -54,16 +54,16 @@ func (m *Null) XXX_DiscardUnknown() {
 var xxx_messageInfo_Null proto.InternalMessageInfo
 
 type Event struct {
-	Id                   int32                `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Tittle               string               `protobuf:"bytes,2,opt,name=tittle,proto3" json:"tittle,omitempty"`
-	Start                *timestamp.Timestamp `protobuf:"bytes,3,opt,name=start,proto3" json:"start,omitempty"`
-	Duration             int32                `protobuf:"varint,4,opt,name=duration,proto3" json:"duration,omitempty"`
-	Description          string               `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	Notification         int32                `protobuf:"varint,6,opt,name=notification,proto3" json:"notification,omitempty"`
-	Scheduled            bool                 `protobuf:"varint,7,opt,name=scheduled,proto3" json:"scheduled,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
+	Id                   int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Tittle               string                 `protobuf:"bytes,2,opt,name=tittle,proto3" json:"tittle,omitempty"`
+	Start                *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=start,proto3" json:"start,omitempty"`
+	Duration             int32                  `protobuf:"varint,4,opt,name=duration,proto3" json:"duration,omitempty"`
+	Description          string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Notification         int32                  `protobuf:"varint,6,opt,name=notification,proto3" json:"notification,omitempty"`
+	Scheduled            bool                   `protobuf:"varint,7,opt,name=scheduled,proto3" json:"scheduled,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
+	XXX_unrecognized     []byte                 `json:"-"`
+	XXX_sizecache        int32                  `json:"-"`
 }
 
 func (m *Event) Reset()         { *m = Event{} }
@@ -105,7 +105,7 @@ func (m *Event) GetTittle() string {
 	return ""
 }
 
-func (m *Event) GetStart() *timestamp.Timestamp {
+func (m *Event) GetStart() *timestamppb.Timestamp {
 	if m != nil {
 		return m.Start
 	}
