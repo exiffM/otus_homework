@@ -10,13 +10,12 @@ import (
 	"testing"
 	"time"
 
-	"hw12_13_14_15_calendar/internal/app"
-	"hw12_13_14_15_calendar/internal/logger"
-	api "hw12_13_14_15_calendar/internal/server/http/api/default"
-	mdl "hw12_13_14_15_calendar/internal/storage"
-	sqlstorage "hw12_13_14_15_calendar/internal/storage/sql"
-	"hw12_13_14_15_calendar/migrations"
-
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/app"
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/logger"
+	api "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/http/api/default"
+	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
+	sqlstorage "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage/sql"
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/migrations"
 	"github.com/mailru/easyjson"
 	"github.com/stretchr/testify/require"
 )

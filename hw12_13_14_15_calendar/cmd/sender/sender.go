@@ -4,9 +4,8 @@ import (
 	"context"
 	"os"
 
-	"hw12_13_14_15_calendar/internal/logger"
-	"hw12_13_14_15_calendar/internal/storage"
-
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/logger"
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
 	"github.com/mailru/easyjson"
 	amqp "github.com/rabbitmq/amqp091-go"
 )

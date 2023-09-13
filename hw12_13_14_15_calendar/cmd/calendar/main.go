@@ -11,14 +11,13 @@ import (
 	"sync"
 	"syscall"
 
-	"hw12_13_14_15_calendar/internal/app"
-	cfg "hw12_13_14_15_calendar/internal/config"
-	"hw12_13_14_15_calendar/internal/logger"
-	rpcserver "hw12_13_14_15_calendar/internal/server/grpc/server"
-	internalhttp "hw12_13_14_15_calendar/internal/server/http"
-	sqlstorage "hw12_13_14_15_calendar/internal/storage/sql"
-	"hw12_13_14_15_calendar/migrations"
-
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/app"
+	cfg "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/config"
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/logger"
+	rpcserver "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/server"
+	internalhttp "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/http"
+	sqlstorage "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage/sql"
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/migrations"
 	"github.com/spf13/viper"
 )
 
@@ -113,5 +112,5 @@ func main() {
 	wg.Wait()
 	// migrations.Down("preparedb")
 	migrations.Down("inserting")
-	// migrations.Down("files")
+	migrations.Down("files")
 }

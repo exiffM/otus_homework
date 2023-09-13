@@ -4,10 +4,9 @@ import (
 	"context"
 	"net"
 
-	interfaces "hw12_13_14_15_calendar/internal/interface"
-	eventrpcapi "hw12_13_14_15_calendar/internal/server/grpc/pb"
-	mdl "hw12_13_14_15_calendar/internal/storage"
-
+	interfaces "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/interface"
+	eventrpcapi "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/pb"
+	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -102,8 +101,10 @@ func (s *GRPCServer) Events(_ *emptypb.Empty, stream eventrpcapi.EventService_Ev
 	return nil
 }
 
-func (s *GRPCServer) NotScheduledEvents(_ *emptypb.Empty,
-	stream eventrpcapi.EventService_NotScheduledEventsServer) error {
+func (s *GRPCServer) NotScheduledEvents(
+	_ *emptypb.Empty,
+	stream eventrpcapi.EventService_NotScheduledEventsServer,
+) error {
 	events, err := s.app.NotScheduledEvents()
 	if err != nil {
 		return err

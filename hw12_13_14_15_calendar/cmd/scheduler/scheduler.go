@@ -4,10 +4,9 @@ import (
 	"os"
 	"time"
 
-	"hw12_13_14_15_calendar/internal/logger"
-	rpcclient "hw12_13_14_15_calendar/internal/server/grpc/client"
-	rpcs "hw12_13_14_15_calendar/internal/server/grpc/server"
-
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/logger"
+	rpcclient "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/client"
+	rpcs "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/server"
 	"github.com/mailru/easyjson"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/net/context"
@@ -33,7 +32,7 @@ func confirmOne(confirms <-chan amqp.Confirmation, log *logger.Logger) {
 	}
 }
 
-func (s *Scheduler) Start(ctx context.Context) error {
+func (s *Scheduler) Start(ctx context.Context) error { //nolint: gocognit
 	s.ctx = ctx
 	s.conn, s.err = amqp.Dial(s.cfg.Target.ConnectionString)
 	log := logger.New(s.cfg.Logger, os.Stdout)
@@ -50,28 +49,18 @@ func (s *Scheduler) Start(ctx context.Context) error {
 
 	s.err = s.ch.ExchangeDeclare(
 		s.cfg.Target.ExchangeName,
-		"direct",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
+		"direct", true, false, false, false, nil)
 	if s.err != nil {
 		log.Error("Failed to declare an exchange")
 		return s.err
 	}
-
 	if s.err = s.ch.Confirm(false); s.err != nil {
 		log.Error("Checking comnfirmation failed")
 	}
 	confirms := s.ch.NotifyPublish(make(chan amqp.Confirmation, 1))
-
 	// Create rpc client connect and get events list
 	src := rpcclient.Client{}
-	err := src.Connect(s.cfg.Source.ConnectionString)
-	_ = err
-
+	src.Connect(s.cfg.Source.ConnectionString)
 	// Cycling in default case and checking unscheduled events every timeout value
 	// Then mark events as scheduled and publish in rqbbit
 FORCYCLE:
@@ -81,7 +70,7 @@ FORCYCLE:
 			break FORCYCLE
 		case <-time.After(time.Second * time.Duration(s.cfg.Timeout)):
 			rpcevents, err := src.NotScheduledEvents(ctx)
-			if err != nil {
+			if err != nil { //nolint: nestif
 				log.Error("Error calling rpc method gets unscheduled events")
 			} else {
 				for _, rpcevent := range rpcevents {

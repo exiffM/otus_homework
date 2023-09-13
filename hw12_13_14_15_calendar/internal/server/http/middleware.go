@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	interfaces "hw12_13_14_15_calendar/internal/interface"
+	interfaces "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/interface"
 )
 
 type ResponceLogger struct {

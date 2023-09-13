@@ -19,7 +19,6 @@ func init() {
 }
 
 func main() {
-
 	flag.Parse()
 
 	file, err := os.Open(configFilePath)

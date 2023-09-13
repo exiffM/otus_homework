@@ -3,8 +3,7 @@ package sqlstorage
 import (
 	"database/sql"
 
-	mdl "hw12_13_14_15_calendar/internal/storage"
-
+	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
 	_ "github.com/lib/pq" // comment for justifying
 )
 
@@ -124,7 +123,13 @@ func (s *Storage) NotScheduledEvents() ([]mdl.Event, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err = rows.Scan(&event.ID, &event.Title, &event.Start, &event.Duration, &event.Description, &event.NotificationTime, &event.Scheduled)
+		err = rows.Scan(&event.ID,
+			&event.Title,
+			&event.Start,
+			&event.Duration,
+			&event.Description,
+			&event.NotificationTime,
+			&event.Scheduled)
 		if err != nil {
 			return nil, err
 		}

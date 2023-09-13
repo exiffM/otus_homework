@@ -6,8 +6,7 @@ import (
 	"io"
 	"log"
 
-	eventrpcapi "hw12_13_14_15_calendar/internal/server/grpc/pb"
-
+	eventrpcapi "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/emptypb"

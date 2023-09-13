@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 
-	interfaces "hw12_13_14_15_calendar/internal/interface"
-	mdl "hw12_13_14_15_calendar/internal/storage"
+	interfaces "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/interface"
+	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
 )
 
 type App struct {

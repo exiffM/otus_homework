@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	interfaces "hw12_13_14_15_calendar/internal/interface"
-	"hw12_13_14_15_calendar/internal/server/http/api"
-
+	interfaces "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/interface"
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/http/api"
 	"github.com/gorilla/mux"
 )
 
@@ -37,7 +36,7 @@ func NewServer(h, p string, rht int, l interfaces.Logger, a interfaces.Applicati
 
 func (s *Server) Start() error {
 	s.logger.Info("Server.Start()")
-	err := s.server.ListenAndServe() //nolint: gosec
+	err := s.server.ListenAndServe()
 	if err != nil {
 		return err
 	}

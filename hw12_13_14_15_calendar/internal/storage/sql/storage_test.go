@@ -4,9 +4,8 @@ import (
 	"testing"
 	"time"
 
-	mdl "hw12_13_14_15_calendar/internal/storage"
-	"hw12_13_14_15_calendar/migrations"
-
+	mdl "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/migrations"
 	"github.com/stretchr/testify/require"
 )
 
