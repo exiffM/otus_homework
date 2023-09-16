@@ -108,6 +108,7 @@ FORCYCLE:
 					event.Start,
 				)
 			}
+			message.Ack(false)
 		}
 	}
 

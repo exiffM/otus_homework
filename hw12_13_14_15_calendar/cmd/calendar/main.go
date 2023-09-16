@@ -17,7 +17,6 @@ import (
 	rpcserver "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/server"
 	internalhttp "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/http"
 	sqlstorage "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage/sql"
-	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/migrations"
 	"github.com/spf13/viper"
 )
 
@@ -57,12 +56,12 @@ func main() {
 	storage := sqlstorage.New(config.Storage.DSN)
 	calendar := app.New(logg, storage)
 
-	if err := migrations.Up("files"); err != nil {
-		log.Println("Unable to up migration in \"files\"")
-	}
-	if err := migrations.Up("inserting"); err != nil {
-		log.Println("Unable to up migration in \"inserting\"")
-	}
+	// if err := migrations.Up("files"); err != nil {
+	// 	log.Println("Unable to up migration in \"files\"")
+	// }
+	// if err := migrations.Up("inserting"); err != nil {
+	// 	log.Println("Unable to up migration in \"inserting\"")
+	// }
 	// terr := migrations.Up("files")
 	// _ = terr
 	// terr = migrations.Up("preparedb")
@@ -111,6 +110,6 @@ func main() {
 	onErrorStopOnce.Do(cancel)
 	wg.Wait()
 	// migrations.Down("preparedb")
-	migrations.Down("inserting")
-	migrations.Down("files")
+	// migrations.Down("inserting")
+	// migrations.Down("files")
 }

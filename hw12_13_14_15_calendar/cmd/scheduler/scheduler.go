@@ -26,7 +26,7 @@ func NewScheduler(configuration SchedulerCfg) *Scheduler {
 
 func confirmOne(confirms <-chan amqp.Confirmation, log *logger.Logger) {
 	if confirmed := <-confirms; confirmed.Ack {
-		log.Info("Confirmation delivery")
+		log.Error("Confirmation delivery")
 	} else {
 		log.Error("Confirmation delivery error")
 	}
@@ -49,7 +49,13 @@ func (s *Scheduler) Start(ctx context.Context) error { //nolint: gocognit
 
 	s.err = s.ch.ExchangeDeclare(
 		s.cfg.Target.ExchangeName,
-		"direct", true, false, false, false, nil)
+		"direct",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
 	if s.err != nil {
 		log.Error("Failed to declare an exchange")
 		return s.err
@@ -75,7 +81,8 @@ FORCYCLE:
 			} else {
 				for _, rpcevent := range rpcevents {
 					event := rpcs.ConvertToEvent(*rpcevent)
-					if time.Now().Add(time.Duration(event.Duration)*time.Minute).Compare(event.Start) >= 0 {
+					val := time.Now().Add(time.Duration(event.NotificationTime) * time.Minute)
+					if val.Compare(event.Start) >= 0 {
 						// Mark as scheduled and publish message
 						event.Scheduled = true
 						*rpcevent = rpcs.ConvertFromEvent(event)
