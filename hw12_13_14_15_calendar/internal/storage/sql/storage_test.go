@@ -14,7 +14,7 @@ import (
 var dsn = "user=igor dbname=calendardb password=igor"
 
 func TestStorage(t *testing.T) {
-	migrations.Up("files")
+	migrations.Up(dsn, "files")
 	storage := New(dsn)
 	loc, err := time.LoadLocation("Europe/Moscow")
 	_ = loc // hotfix for tests (TODO: accept location on application level)
@@ -95,5 +95,5 @@ func TestStorage(t *testing.T) {
 		require.NotEmpty(t, events)
 		require.False(t, events[0].Scheduled)
 	})
-	migrations.Down("files")
+	migrations.Down(dsn, "files")
 }

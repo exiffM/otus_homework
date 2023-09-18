@@ -5,4 +5,4 @@ target:
   exchangename: events
   key: amq.notification
 timeout: 30
-logger: error
+logger: info

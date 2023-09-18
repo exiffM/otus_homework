@@ -20,7 +20,7 @@ import (
 var dsn = "user=igor dbname=calendardb password=igor"
 
 func TestIntegration(t *testing.T) {
-	migrations.Up("files")
+	migrations.Up(dsn, "files")
 	gdsn := "localhost:5000"
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -57,7 +57,7 @@ func TestIntegration(t *testing.T) {
 	}
 	firstCreated, err := gclient.CreateEvent(ctx, &gevent)
 	if err != nil {
-		log.Info(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	require.Equal(t, int32(1), firstCreated.Id,
@@ -70,7 +70,7 @@ func TestIntegration(t *testing.T) {
 	}
 	createdGevent, err := gclient.CreateEvent(ctx, &gevent)
 	if err != nil {
-		log.Info(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	require.Equal(t, int32(2), createdGevent.Id,
@@ -85,7 +85,7 @@ func TestIntegration(t *testing.T) {
 	}
 	updatedGevent, err := gclient.UpdateEvent(ctx, &gevent)
 	if err != nil {
-		log.Info(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	require.Equal(t, gevent.Tittle, updatedGevent.Tittle,
@@ -97,7 +97,7 @@ func TestIntegration(t *testing.T) {
 	id.Id = 1
 	_, err = gclient.DeleteEvent(ctx, &id)
 	if err != nil {
-		log.Info(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	deletedEvent, err := gclient.SelectEvent(ctx, &id)
@@ -107,7 +107,7 @@ func TestIntegration(t *testing.T) {
 	id.Id = 2
 	selectedEvent, err := gclient.SelectEvent(ctx, &id)
 	if err != nil {
-		log.Info(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	require.Equal(t, createdGevent.Tittle, selectedEvent.Tittle,
@@ -117,13 +117,13 @@ func TestIntegration(t *testing.T) {
 	// Show list
 	events, err := gclient.Events(ctx)
 	if err != nil {
-		log.Info(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	log.Info("%+v", events)
 	log.Info("All test passed successfully")
 	gclient.Close()
-	migrations.Down("files")
+	migrations.Down(dsn, "files")
 	cancel()
 	wg.Wait()
 }

@@ -159,7 +159,7 @@ func UnaryInterceptor(logger interfaces.Logger) func(
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
-		logger.Info("UnaryInterceptor: Method - %q Object - %s", info.FullMethod, req)
+		logger.Warn("UnaryInterceptor: Method - %q Object - %s", info.FullMethod, req)
 		return handler(ctx, req)
 	}
 }
@@ -175,7 +175,7 @@ func StreamInterceptor(logger interfaces.Logger) func(
 		info *grpc.StreamServerInfo,
 		handler grpc.StreamHandler,
 	) error {
-		logger.Info("StreamInterceptor: Method - %q", info.FullMethod)
+		logger.Warn("StreamInterceptor: Method - %q", info.FullMethod)
 		return handler(srv, stream)
 	}
 }

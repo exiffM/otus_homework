@@ -16,7 +16,7 @@ func (ah *DefaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_ = r
 	_, _, err := easyjson.MarshalToHTTPResponseWriter(ah.Response, w)
 	if err != nil {
-		ah.Logger.Info("Write http response error on default handler")
+		ah.Logger.Error("Write http response error on default handler")
 		return
 	}
 }

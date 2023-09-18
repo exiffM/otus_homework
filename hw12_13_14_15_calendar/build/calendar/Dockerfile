@@ -1,11 +1,12 @@
 # Собираем в гошке
-FROM golang:1.19 as build
+FROM golang:1.20 as build
 
 ENV BIN_FILE /opt/calendar/calendar-app
 ENV CODE_DIR /go/src/
 
 WORKDIR ${CODE_DIR}
-
+COPY ./migrations/files /files
+COPY ./migrations/inserting /inserting
 # Кэшируем слои с модулями
 COPY go.mod .
 COPY go.sum .
@@ -20,15 +21,19 @@ RUN CGO_ENABLED=0 go build \
         -ldflags "$LDFLAGS" \
         -o ${BIN_FILE} cmd/calendar/*
 
-# На выходе тонкий образ
-FROM alpine:3.9
+# На выходе тонкий образ alpine 3.9 <---
+FROM ubuntu:latest
 
+EXPOSE 1235
+EXPOSE 5000
 LABEL ORGANIZATION="OTUS Online Education"
 LABEL SERVICE="calendar"
 LABEL MAINTAINERS="student@otus.ru"
 
 ENV BIN_FILE "/opt/calendar/calendar-app"
 COPY --from=build ${BIN_FILE} ${BIN_FILE}
+COPY --from=build /files /opt/calendar/files
+COPY --from=build /inserting /opt/calendar/inserting
 
 ENV CONFIG_FILE /etc/calendar/config.yml
 COPY ./configs/config.yml ${CONFIG_FILE}

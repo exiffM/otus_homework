@@ -1,4 +1,4 @@
-package main
+package scheduler
 
 import (
 	"os"
@@ -13,20 +13,20 @@ import (
 )
 
 type Scheduler struct {
-	cfg  SchedulerCfg
+	cfg  Cfg
 	conn *amqp.Connection
 	ch   *amqp.Channel
 	err  error
 	ctx  context.Context
 }
 
-func NewScheduler(configuration SchedulerCfg) *Scheduler {
+func NewScheduler(configuration Cfg) *Scheduler {
 	return &Scheduler{cfg: configuration}
 }
 
 func confirmOne(confirms <-chan amqp.Confirmation, log *logger.Logger) {
 	if confirmed := <-confirms; confirmed.Ack {
-		log.Error("Confirmation delivery")
+		log.Info("Confirmation delivery")
 	} else {
 		log.Error("Confirmation delivery error")
 	}

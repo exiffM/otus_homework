@@ -1,6 +1,6 @@
-package main
+package sender
 
-type SenderSource struct {
+type Source struct {
 	ConnectionString string
 	QueueName        string
 	ExchangeName     string
@@ -8,11 +8,11 @@ type SenderSource struct {
 	Tag              string
 }
 
-type SenderCfg struct {
-	Source    SenderSource
+type Cfg struct {
+	Source    Source
 	LoggLevel string
 }
 
-func NewSenderConfig() *SenderCfg {
-	return &SenderCfg{}
+func NewSenderConfig() *Cfg {
+	return &Cfg{}
 }

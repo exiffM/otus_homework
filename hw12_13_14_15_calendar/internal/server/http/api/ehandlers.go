@@ -25,7 +25,7 @@ func (ch *CreateHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	method := "api.create.event"
 	if r.Method != "POST" {
 		errString := "Invalid http method on create event"
-		ch.logger.Info(errString)
+		ch.logger.Error(errString)
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, errString),
 			Logger:   ch.logger,
@@ -35,7 +35,7 @@ func (ch *CreateHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	var event mdl.Event
 	if err := easyjson.UnmarshalFromReader(r.Body, &event); err != nil {
-		ch.logger.Info("Unmarshal error on create event")
+		ch.logger.Error("Unmarshal error on create event")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   ch.logger,
@@ -46,7 +46,7 @@ func (ch *CreateHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	e, err := ch.app.CreateEvent(r.Context(), event)
 	if err != nil {
-		ch.logger.Info("Create event error")
+		ch.logger.Error("Create event error")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   ch.logger,
@@ -58,7 +58,7 @@ func (ch *CreateHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	response := api.NewEventResponse(method, "", e)
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(response, w)
 	if err != nil {
-		ch.logger.Info("Write http response error on create")
+		ch.logger.Error("Write http response error on create")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   ch.logger,
@@ -81,7 +81,7 @@ func (sh *SelectHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	method := "api.select.event"
 	if r.Method != "GET" {
 		errString := "Invalid http method on select event"
-		sh.logger.Info(errString)
+		sh.logger.Error(errString)
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, errString),
 			Logger:   sh.logger,
@@ -92,7 +92,7 @@ func (sh *SelectHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		sh.logger.Info("Id conversion error on select event")
+		sh.logger.Error("Id conversion error on select event")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   sh.logger,
@@ -103,7 +103,7 @@ func (sh *SelectHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	event, err := sh.app.SelectEvent(r.Context(), id)
 	if err != nil {
-		sh.logger.Info("Select event error")
+		sh.logger.Error("Select event error")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   sh.logger,
@@ -115,7 +115,7 @@ func (sh *SelectHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	response := api.NewEventResponse(method, "", event)
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(response, w)
 	if err != nil {
-		sh.logger.Info("Write http response error on select")
+		sh.logger.Error("Write http response error on select")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   sh.logger,
@@ -138,7 +138,7 @@ func (uh *UpdateHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	method := "api.update.event"
 	if r.Method != "PUT" {
 		errString := "Invalid http method on update event"
-		uh.logger.Info(errString)
+		uh.logger.Error(errString)
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, errString),
 			Logger:   uh.logger,
@@ -149,7 +149,7 @@ func (uh *UpdateHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var event mdl.Event
 	if err := easyjson.UnmarshalFromReader(r.Body, &event); err != nil {
-		uh.logger.Info("Unmarshal error on update event")
+		uh.logger.Error("Unmarshal error on update event")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   uh.logger,
@@ -161,7 +161,7 @@ func (uh *UpdateHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		uh.logger.Info("Id conversion error on update event")
+		uh.logger.Error("Id conversion error on update event")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   uh.logger,
@@ -173,7 +173,7 @@ func (uh *UpdateHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	event.ID = id
 	_, err = uh.app.UpdateEvent(r.Context(), event)
 	if err != nil {
-		uh.logger.Info("Update event error")
+		uh.logger.Error("Update event error")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   uh.logger,
@@ -185,7 +185,7 @@ func (uh *UpdateHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	response := api.NewEventResponse(method, "", event)
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(response, w)
 	if err != nil {
-		uh.logger.Info("Write http response error on update")
+		uh.logger.Error("Write http response error on update")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   uh.logger,
@@ -208,7 +208,7 @@ func (dh *DeleteHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	method := "api.delete.event"
 	if r.Method != "DELETE" {
 		errString := "Invalid http method on delete event"
-		dh.logger.Info(errString)
+		dh.logger.Error(errString)
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, errString),
 			Logger:   dh.logger,
@@ -220,7 +220,7 @@ func (dh *DeleteHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		dh.logger.Info("Id conversion error on delete event")
+		dh.logger.Error("Id conversion error on delete event")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   dh.logger,
@@ -231,7 +231,7 @@ func (dh *DeleteHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	err = dh.app.DeleteEvent(r.Context(), id)
 	if err != nil {
-		dh.logger.Info("Delete event error")
+		dh.logger.Error("Delete event error")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   dh.logger,
@@ -246,7 +246,7 @@ func (dh *DeleteHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	response := api.NewEventResponse(method, sb.String(), mdl.Event{})
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(response, w)
 	if err != nil {
-		dh.logger.Info("Write http response error on delete")
+		dh.logger.Error("Write http response error on delete")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   dh.logger,
@@ -269,7 +269,7 @@ func (eh *EventsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	method := "api.events.event"
 	if r.Method != "GET" {
 		errString := "Invalid http method on list events"
-		eh.logger.Info(errString)
+		eh.logger.Error(errString)
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, errString),
 			Logger:   eh.logger,
@@ -280,7 +280,7 @@ func (eh *EventsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	events, err := eh.app.Events()
 	if err != nil {
-		eh.logger.Info("List events error")
+		eh.logger.Error("List events error")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   eh.logger,
@@ -292,7 +292,7 @@ func (eh *EventsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	response := api.NewEventsResponse(method, "", events)
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(response, w)
 	if err != nil {
-		eh.logger.Info("Write http response error on list events")
+		eh.logger.Error("Write http response error on list events")
 		handler := api.DefaultHandler{
 			Response: *api.NewDefaultResponse(method, err.Error()),
 			Logger:   eh.logger,

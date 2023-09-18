@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"sync"
 
+	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/sender"
 	"github.com/spf13/viper"
 )
 
@@ -32,7 +33,7 @@ func main() {
 	viper.SetConfigType("yaml")
 	viper.ReadConfig(file)
 
-	cfg := NewSenderConfig()
+	cfg := sender.NewSenderConfig()
 	err = viper.Unmarshal(cfg)
 	if err != nil {
 		log.Fatalf("Can't convert config to struct %v", err.Error())
@@ -46,7 +47,7 @@ func main() {
 		os.Kill)
 	defer cancel()
 
-	sender := NewSender(*cfg)
+	sender := sender.NewSender(*cfg)
 
 	go func() {
 		defer wg.Done()

@@ -12,8 +12,7 @@ import (
 //go:embed inserting/*.sql
 var embedMigrations embed.FS
 
-func Up(dir string) error {
-	dsn := "user=igor dbname=calendardb password=igor"
+func Up(dsn, dir string) error {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return err
@@ -28,8 +27,7 @@ func Up(dir string) error {
 	return db.Close()
 }
 
-func Down(dir string) error {
-	dsn := "user=igor dbname=calendardb password=igor"
+func Down(dsn, dir string) error {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return err

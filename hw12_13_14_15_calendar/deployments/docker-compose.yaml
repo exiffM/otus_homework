@@ -1,1 +1,49 @@
-version: "3"
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - 15672:15672
+
+  postgres:
+    image: postgres:13.3
+    depends_on:
+      - rabbitmq
+    environment:
+      POSTGRES_DB: "calendardb"
+      POSTGRES_USER: "igor"
+      POSTGRES_PASSWORD: "igor"
+    ports:
+      - "5432:5432"
+
+  calendar:
+    build:
+      context: ../
+      dockerfile: ./build/calendar/Dockerfile
+    depends_on:
+      - postgres
+    ports: 
+      - "5000:5000"
+      - "1235:1235"
+    container_name: calendar
+    environment:
+      - HOST=0.0.0.0
+
+  # scheduler:
+  #   build:
+  #     context: ./
+  #     dockerfile: ./build/scheduler/Dockerfile
+  #   depends_on:
+  #     - calendar
+  #   container_name: scheduler
+  #   environment:
+  #     - CALENDAR_HOST=calendar
+
+  # sender:
+  #   build:
+  #     context: ./
+  #     dockerfile: ./build/sender/Dockerfile
+  #   depends_on:
+  #     - scheduler
+  #   container_name: sender

@@ -4,4 +4,4 @@ source:
   exchangename: events
   key: amq.notification
   tag: simpleConsumer
-logglevel: error
+logglevel: info

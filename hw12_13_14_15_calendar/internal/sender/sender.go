@@ -1,8 +1,10 @@
-package main
+package sender
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/logger"
 	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
@@ -11,15 +13,16 @@ import (
 )
 
 type Sender struct {
-	cfg  SenderCfg
-	conn *amqp.Connection
-	ch   *amqp.Channel
-	que  amqp.Queue
-	err  error
-	ctx  context.Context
+	cfg     Cfg
+	conn    *amqp.Connection
+	ch      *amqp.Channel
+	que     amqp.Queue
+	err     error
+	ctx     context.Context
+	Message string // For tests
 }
 
-func NewSender(configuration SenderCfg) *Sender {
+func NewSender(configuration Cfg) *Sender {
 	return &Sender{cfg: configuration}
 }
 
@@ -107,6 +110,12 @@ FORCYCLE:
 					event.Description,
 					event.Start,
 				)
+				sb := strings.Builder{}
+				sb.WriteString(fmt.Sprintf("Notification!\n Event %q,\n %v, starts in %v",
+					event.Title,
+					event.Description,
+					event.Start))
+				s.Message = sb.String()
 			}
 			message.Ack(false)
 		}
