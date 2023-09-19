@@ -1,4 +1,4 @@
-package client
+package rpcclient
 
 import (
 	"context"
@@ -56,6 +56,25 @@ func (c *Client) DeleteEvent(ctx context.Context, id *eventrpcapi.Id) (*emptypb.
 
 func (c *Client) Events(ctx context.Context) ([]*eventrpcapi.Event, error) {
 	events, err := c.grpcClient.Events(ctx, &emptypb.Empty{}, localOpts...)
+	if err != nil {
+		return nil, err
+	}
+	pbEvents := make([]*eventrpcapi.Event, 0)
+	for {
+		pbEvent, err := events.Recv()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		pbEvents = append(pbEvents, pbEvent)
+	}
+	return pbEvents, nil
+}
+
+func (c *Client) NotScheduledEvents(ctx context.Context) ([]*eventrpcapi.Event, error) {
+	events, err := c.grpcClient.NotScheduledEvents(ctx, &emptypb.Empty{}, localOpts...)
 	if err != nil {
 		return nil, err
 	}

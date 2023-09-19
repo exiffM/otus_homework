@@ -43,12 +43,13 @@ func (s *Storage) Close() error {
 func (s *Storage) CreateEvent(event mdl.Event) (mdl.Event, error) {
 	sqlStatement := `
 	INSERT INTO events(
-		"title", "start", "duration", "descr", "notification"
-	) values($1, $2, $3, $4, $5)
+		"title", "start", "duration", "descr", "notification", "scheduled"
+	) values($1, $2, $3, $4, $5, $6)
 	RETURNING "id";`
 	err := s.dbConn.QueryRow(sqlStatement,
-		event.Title, event.Start, event.Duration, event.Description, event.NotificationTime,
-	).Scan(&(event.ID))
+		event.Title, event.Start, event.Duration,
+		event.Description, event.NotificationTime,
+		event.Scheduled).Scan(&(event.ID))
 	if err != nil {
 		return mdl.Event{}, err
 	}
@@ -61,7 +62,7 @@ func (s *Storage) SelectEvent(id int) (mdl.Event, error) {
 	SELECT * FROM events WHERE "id"=$1`
 	row := s.dbConn.QueryRow(sqlStatement, id)
 	err := row.Scan(&(event.ID), &(event.Title), &(event.Start),
-		&(event.Duration), &(event.Description), &(event.NotificationTime))
+		&(event.Duration), &(event.Description), &(event.NotificationTime), &(event.Scheduled))
 	if err != nil {
 		return mdl.Event{}, err
 	}
@@ -71,10 +72,10 @@ func (s *Storage) SelectEvent(id int) (mdl.Event, error) {
 func (s *Storage) UpdateEvent(event mdl.Event) (mdl.Event, error) {
 	sqlStatement := `
 	UPDATE events 
-	SET "title"=$1, "start"=$2, "duration"=$3, "descr"=$4, "notification"=$5
-	WHERE "id"=$6;`
+	SET "title"=$1, "start"=$2, "duration"=$3, "descr"=$4, "notification"=$5, "scheduled"=$6
+	WHERE "id"=$7;`
 	_, err := s.dbConn.Exec(sqlStatement, event.Title, event.Start,
-		event.Duration, event.Description, event.NotificationTime, event.ID)
+		event.Duration, event.Description, event.NotificationTime, event.Scheduled, event.ID)
 	if err != nil {
 		return mdl.Event{}, err
 	}
@@ -94,14 +95,41 @@ func (s *Storage) Events() ([]mdl.Event, error) {
 	var event mdl.Event
 	result := make([]mdl.Event, 0)
 	sqlStatement := `
-	SELECT * FROM events`
+	SELECT * FROM events;`
 	rows, err := s.dbConn.Query(sqlStatement)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err = rows.Scan(&event.ID, &event.Title, &event.Start, &event.Duration, &event.Description, &event.NotificationTime)
+		err = rows.Scan(&event.ID, &event.Title, &event.Start, &event.Duration,
+			&event.Description, &event.NotificationTime, &event.Scheduled)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, event)
+	}
+	return result, nil
+}
+
+func (s *Storage) NotScheduledEvents() ([]mdl.Event, error) {
+	var event mdl.Event
+	result := make([]mdl.Event, 0)
+	sqlStatement := `
+	SELECT * FROM events WHERE scheduled=$1;`
+	rows, err := s.dbConn.Query(sqlStatement, false)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err = rows.Scan(&event.ID,
+			&event.Title,
+			&event.Start,
+			&event.Duration,
+			&event.Description,
+			&event.NotificationTime,
+			&event.Scheduled)
 		if err != nil {
 			return nil, err
 		}

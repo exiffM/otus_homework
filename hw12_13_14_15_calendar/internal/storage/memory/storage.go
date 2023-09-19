@@ -95,3 +95,19 @@ func (s *Storage) Events() ([]mdl.Event, error) {
 	sort.Slice(result, func(i, j int) bool { return result[i].ID < result[j].ID })
 	return result, nil
 }
+
+func (s *Storage) NotScheduledEvents() ([]mdl.Event, error) {
+	if s.data == nil {
+		return nil, errCreate
+	}
+	result := make([]mdl.Event, 0)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, event := range s.data {
+		if !event.Scheduled {
+			result = append(result, event)
+		}
+	}
+	sort.Slice(result, func(i, j int) bool { return result[i].ID < result[j].ID })
+	return result, nil
+}

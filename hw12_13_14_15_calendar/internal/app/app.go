@@ -60,3 +60,11 @@ func (a *App) Events() ([]mdl.Event, error) {
 	defer a.storage.Close()
 	return a.storage.Events()
 }
+
+func (a *App) NotScheduledEvents() ([]mdl.Event, error) {
+	if err := a.storage.Connect(); err != nil {
+		return nil, err
+	}
+	defer a.storage.Close()
+	return a.storage.NotScheduledEvents()
+}

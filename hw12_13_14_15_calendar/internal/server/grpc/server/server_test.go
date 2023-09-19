@@ -1,4 +1,4 @@
-package server
+package rpcserver
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/app"
 	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/logger"
-	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/client"
+	rpcclient "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/client"
 	eventrpcapi "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/pb"
 	sqlstorage "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage/sql"
 	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/migrations"
@@ -20,7 +20,7 @@ import (
 var dsn = "user=igor dbname=calendardb password=igor"
 
 func TestIntegration(t *testing.T) {
-	migrations.Up()
+	migrations.Up("files")
 	gdsn := "localhost:5000"
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -45,7 +45,7 @@ func TestIntegration(t *testing.T) {
 	}()
 	time.Sleep(5 * time.Second)
 
-	gclient := client.Client{}
+	gclient := rpcclient.Client{}
 	gclient.Connect(gdsn)
 	log.Info("Client was created and connected")
 	// Create
@@ -123,7 +123,7 @@ func TestIntegration(t *testing.T) {
 	log.Info("%+v", events)
 	log.Info("All test passed successfully")
 	gclient.Close()
-	migrations.Down()
+	migrations.Down("files")
 	cancel()
 	wg.Wait()
 }

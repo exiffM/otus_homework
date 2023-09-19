@@ -14,7 +14,7 @@ import (
 var dsn = "user=igor dbname=calendardb password=igor"
 
 func TestStorage(t *testing.T) {
-	migrations.Up()
+	migrations.Up("files")
 	storage := New(dsn)
 	loc, err := time.LoadLocation("Europe/Moscow")
 	_ = loc // hotfix for tests (TODO: accept location on application level)
@@ -88,5 +88,12 @@ func TestStorage(t *testing.T) {
 		require.Equal(t, []mdl.Event{expectedEvent},
 			events, "Failed! Event slices are not equal!")
 	})
-	migrations.Down()
+
+	t.Run("Not scheduled events", func(t *testing.T) {
+		events, err := storage.NotScheduledEvents()
+		require.Nil(t, err, "Failed! Error is not nil")
+		require.NotEmpty(t, events)
+		require.False(t, events[0].Scheduled)
+	})
+	migrations.Down("files")
 }

@@ -34,24 +34,20 @@ var (
 
 func init() {
 	ctx, cancel = context.WithCancel(context.Background())
-	log = logger.New("info", os.Stdin)
+	log = logger.New("info", os.Stdout)
 	source = sqlstorage.New(dsn)
 	application = app.New(log, source)
-	httpServer = NewServer(host, port, log, application)
+	httpServer = NewServer(host, port, 10, log, application)
 }
 
 func TestComplex(t *testing.T) {
-	migrations.Up()
-	defer cancel()
+	what := migrations.Up("files")
+	_ = what
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		httpServer.Start(ctx)
-	}()
-	defer func() {
-		wg.Done()
-		httpServer.Stop(ctx)
+		httpServer.Start()
 	}()
 	time.Sleep(5 * time.Second)
 	client := &http.Client{}
@@ -189,5 +185,8 @@ func TestComplex(t *testing.T) {
 			"Error in response! Actual response is: %q", defResponse.Error)
 		response.Body.Close()
 	})
-	migrations.Down()
+	migrations.Down("files")
+	httpServer.Stop(ctx)
+	cancel()
+	wg.Wait()
 }

@@ -1,4 +1,4 @@
-package server
+package rpcserver
 
 import (
 	"context"
@@ -21,6 +21,7 @@ func ConvertToEvent(e eventrpcapi.Event) mdl.Event {
 		Duration:         int(e.Duration),
 		Description:      e.Description,
 		NotificationTime: int(e.Notification),
+		Scheduled:        e.Scheduled,
 	}
 }
 
@@ -33,6 +34,7 @@ func ConvertFromEvent(e mdl.Event) eventrpcapi.Event {
 		Duration:     int32(e.Duration),
 		Description:  e.Description,
 		Notification: int32(e.NotificationTime),
+		Scheduled:    e.Scheduled,
 	}
 }
 
@@ -41,6 +43,7 @@ type GRPCServer struct {
 	logger interfaces.Logger
 	app    interfaces.Application
 	server *grpc.Server
+	lis    net.Listener
 }
 
 func NewGRPCServer(
@@ -98,8 +101,26 @@ func (s *GRPCServer) Events(_ *emptypb.Empty, stream eventrpcapi.EventService_Ev
 	return nil
 }
 
+func (s *GRPCServer) NotScheduledEvents(
+	_ *emptypb.Empty,
+	stream eventrpcapi.EventService_NotScheduledEventsServer,
+) error {
+	events, err := s.app.NotScheduledEvents()
+	if err != nil {
+		return err
+	}
+	for _, event := range events {
+		pbEvent := ConvertFromEvent(event)
+		if err := stream.Send(&pbEvent); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *GRPCServer) Start(address string) error {
-	lis, err := net.Listen("tcp", address)
+	var err error
+	s.lis, err = net.Listen("tcp", address)
 	if err != nil {
 		return err
 	}
@@ -110,17 +131,21 @@ func (s *GRPCServer) Start(address string) error {
 	eventrpcapi.RegisterEventServiceServer(gRPCServer, s)
 	s.server = gRPCServer
 	s.logger.Info("GRPCServer.Start()")
-	return s.server.Serve(lis)
+	err = s.server.Serve(s.lis)
+	return err
 }
 
 func (s *GRPCServer) Stop() {
 	s.logger.Info("GRPCServer.Stop()")
 	s.server.Stop()
+	s.logger.Error("After RPC stop!")
 }
 
 func (s *GRPCServer) GracefulStop() {
 	s.logger.Info("GRPCServer.GracefulStop()")
+	// s.lis.Close()
 	s.server.GracefulStop()
+	s.logger.Error("After RPC Graceful stop!")
 }
 
 func UnaryInterceptor(logger interfaces.Logger) func(

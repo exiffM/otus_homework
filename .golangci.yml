@@ -20,7 +20,8 @@ linters-settings:
          - github.com/mailru/easyjson
          - github.com/spf13/viper
          - github.com/lib/pq
-         - github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/
+         - github.com/exiffM/otus_homework/hw12_13_14_15_calendar
+         - github.com/rabbitmq/amqp091-go
          - github.com/gorilla/mux
          - github.com/pressly/goose/v3
 

@@ -4,10 +4,10 @@ package api
 
 import (
 	json "encoding/json"
-	storage "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
+	storage "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage"
 )
 
 // suppress unused package warning
@@ -18,7 +18,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjsonDafff8e6DecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault(in *jlexer.Lexer, out *EventsResponse) {
+func easyjsonDafff8e6DecodeHw12131415CalendarInternalServerHttpApiDefault(in *jlexer.Lexer, out *EventsResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -74,7 +74,7 @@ func easyjsonDafff8e6DecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternal
 		in.Consumed()
 	}
 }
-func easyjsonDafff8e6EncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault(out *jwriter.Writer, in EventsResponse) {
+func easyjsonDafff8e6EncodeHw12131415CalendarInternalServerHttpApiDefault(out *jwriter.Writer, in EventsResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -110,27 +110,27 @@ func easyjsonDafff8e6EncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternal
 // MarshalJSON supports json.Marshaler interface
 func (v EventsResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonDafff8e6EncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault(&w, v)
+	easyjsonDafff8e6EncodeHw12131415CalendarInternalServerHttpApiDefault(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v EventsResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonDafff8e6EncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault(w, v)
+	easyjsonDafff8e6EncodeHw12131415CalendarInternalServerHttpApiDefault(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *EventsResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonDafff8e6DecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault(&r, v)
+	easyjsonDafff8e6DecodeHw12131415CalendarInternalServerHttpApiDefault(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *EventsResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonDafff8e6DecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault(l, v)
+	easyjsonDafff8e6DecodeHw12131415CalendarInternalServerHttpApiDefault(l, v)
 }
-func easyjsonDafff8e6DecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault1(in *jlexer.Lexer, out *EventResponse) {
+func easyjsonDafff8e6DecodeHw12131415CalendarInternalServerHttpApiDefault1(in *jlexer.Lexer, out *EventResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -165,7 +165,7 @@ func easyjsonDafff8e6DecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternal
 		in.Consumed()
 	}
 }
-func easyjsonDafff8e6EncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault1(out *jwriter.Writer, in EventResponse) {
+func easyjsonDafff8e6EncodeHw12131415CalendarInternalServerHttpApiDefault1(out *jwriter.Writer, in EventResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -190,27 +190,27 @@ func easyjsonDafff8e6EncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternal
 // MarshalJSON supports json.Marshaler interface
 func (v EventResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonDafff8e6EncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault1(&w, v)
+	easyjsonDafff8e6EncodeHw12131415CalendarInternalServerHttpApiDefault1(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v EventResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonDafff8e6EncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault1(w, v)
+	easyjsonDafff8e6EncodeHw12131415CalendarInternalServerHttpApiDefault1(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *EventResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonDafff8e6DecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault1(&r, v)
+	easyjsonDafff8e6DecodeHw12131415CalendarInternalServerHttpApiDefault1(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *EventResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonDafff8e6DecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault1(l, v)
+	easyjsonDafff8e6DecodeHw12131415CalendarInternalServerHttpApiDefault1(l, v)
 }
-func easyjsonDafff8e6DecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault2(in *jlexer.Lexer, out *DefaultResponse) {
+func easyjsonDafff8e6DecodeHw12131415CalendarInternalServerHttpApiDefault2(in *jlexer.Lexer, out *DefaultResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -243,7 +243,7 @@ func easyjsonDafff8e6DecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternal
 		in.Consumed()
 	}
 }
-func easyjsonDafff8e6EncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault2(out *jwriter.Writer, in DefaultResponse) {
+func easyjsonDafff8e6EncodeHw12131415CalendarInternalServerHttpApiDefault2(out *jwriter.Writer, in DefaultResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -263,23 +263,23 @@ func easyjsonDafff8e6EncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternal
 // MarshalJSON supports json.Marshaler interface
 func (v DefaultResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonDafff8e6EncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault2(&w, v)
+	easyjsonDafff8e6EncodeHw12131415CalendarInternalServerHttpApiDefault2(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v DefaultResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonDafff8e6EncodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault2(w, v)
+	easyjsonDafff8e6EncodeHw12131415CalendarInternalServerHttpApiDefault2(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *DefaultResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonDafff8e6DecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault2(&r, v)
+	easyjsonDafff8e6DecodeHw12131415CalendarInternalServerHttpApiDefault2(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *DefaultResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonDafff8e6DecodeGithubComExiffMOtusHomeworkHw12131415CalendarInternalServerHttpApiDefault2(l, v)
+	easyjsonDafff8e6DecodeHw12131415CalendarInternalServerHttpApiDefault2(l, v)
 }

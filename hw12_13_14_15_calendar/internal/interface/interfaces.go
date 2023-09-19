@@ -21,6 +21,7 @@ type Storage interface {
 	UpdateEvent(event mdl.Event) (mdl.Event, error)
 	DeleteEvent(id int) error
 	Events() ([]mdl.Event, error)
+	NotScheduledEvents() ([]mdl.Event, error)
 }
 
 type Application interface {
@@ -29,4 +30,5 @@ type Application interface {
 	UpdateEvent(ctx context.Context, event mdl.Event) (mdl.Event, error)
 	DeleteEvent(ctx context.Context, id int) error
 	Events() ([]mdl.Event, error)
+	NotScheduledEvents() ([]mdl.Event, error)
 }

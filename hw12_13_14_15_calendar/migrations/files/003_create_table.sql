@@ -5,7 +5,8 @@ title text,
 start timestamp with time zone not null,
 duration bigint,
 descr text,
-notification bigint
+notification bigint,
+scheduled boolean
 );
 
 grant all privileges on table events to igor;

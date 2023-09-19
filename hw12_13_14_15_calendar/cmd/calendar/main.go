@@ -5,16 +5,18 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
-	"time"
 
 	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/app"
 	cfg "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/config"
 	"github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/logger"
+	rpcserver "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/grpc/server"
 	internalhttp "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/exiffM/otus_homework/hw12_13_14_15_calendar/internal/storage/sql"
 	"github.com/spf13/viper"
 )
 
@@ -51,36 +53,63 @@ func main() {
 
 	logg := logger.New(config.Logger.Level, os.Stdout)
 
-	storage := memorystorage.New()
+	storage := sqlstorage.New(config.Storage.DSN)
 	calendar := app.New(logg, storage)
+
+	// if err := migrations.Up("files"); err != nil {
+	// 	log.Println("Unable to up migration in \"files\"")
+	// }
+	// if err := migrations.Up("inserting"); err != nil {
+	// 	log.Println("Unable to up migration in \"inserting\"")
+	// }
+	// terr := migrations.Up("files")
+	// _ = terr
+	// terr = migrations.Up("preparedb")
 
 	server := internalhttp.NewServer(
 		config.HTTP.Host,
 		config.HTTP.Port,
+		config.HTTP.ReadHeaderTimeout,
 		logg,
 		calendar,
 	)
 
-	ctx, cancel := signal.NotifyContext(context.Background(),
-		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	defer cancel()
+	RPCServer := rpcserver.NewGRPCServer(logg, calendar)
 
+	ctx, cancel := context.WithCancel(context.Background())
+
+	wg := sync.WaitGroup{}
+	onErrorStopOnce := sync.Once{}
+	// // Start http server
+	wg.Add(2)
 	go func() {
-		<-ctx.Done()
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-		defer cancel()
-
-		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+		defer wg.Done()
+		if err := server.Start(); err != nil {
+			logg.Error("failed to start HTTP server: " + err.Error())
+			onErrorStopOnce.Do(cancel)
 		}
 	}()
 
-	logg.Info("calendar is running...")
+	// // Start grpc server
+	go func() {
+		defer wg.Done()
+		if err := RPCServer.Start(net.JoinHostPort(config.RPC.Host, config.RPC.Port)); err != nil {
+			logg.Error("failed to start RPC server: " + err.Error())
+			onErrorStopOnce.Do(cancel)
+		}
+	}()
 
-	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
-		cancel()
-		os.Exit(1) //nolint:gocritic
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT)
+	<-c
+
+	if err := server.Stop(ctx); err != nil {
+		fmt.Println(err)
 	}
+	RPCServer.Stop()
+	onErrorStopOnce.Do(cancel)
+	wg.Wait()
+	// migrations.Down("preparedb")
+	// migrations.Down("inserting")
+	// migrations.Down("files")
 }

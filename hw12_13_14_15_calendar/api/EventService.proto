@@ -8,11 +8,12 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 service EventService {
-    rpc CreateEvent (Event)           returns (Event) {}
-    rpc SelectEvent (Id)              returns (Event)                 {}
-    rpc UpdateEvent (Event)           returns (Event) {}
-    rpc DeleteEvent (Id)              returns (google.protobuf.Empty) {}
-    rpc Events(google.protobuf.Empty) returns (stream Event)          {}
+    rpc CreateEvent (Event)                       returns (Event)                 {}
+    rpc SelectEvent (Id)                          returns (Event)                 {}
+    rpc UpdateEvent (Event)                       returns (Event)                 {}
+    rpc DeleteEvent (Id)                          returns (google.protobuf.Empty) {}
+    rpc Events(google.protobuf.Empty)             returns (stream Event)          {}
+    rpc NotScheduledEvents(google.protobuf.Empty) returns (stream Event)          {}
 }
 
 message Null {
@@ -25,6 +26,7 @@ message Event {
     int32 duration                  = 4;
     string description              = 5;
     int32 notification              = 6;
+    bool scheduled                  = 7;
 }
 
 message Error {

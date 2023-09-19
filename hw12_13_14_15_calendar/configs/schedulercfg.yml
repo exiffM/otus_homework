@@ -1,0 +1,8 @@
+source:
+  connectionstring: localhost:5000
+target:
+  connectionstring: amqp://guest:guest@localhost:5672/
+  exchangename: events
+  key: amq.notification
+timeout: 30
+logger: error
