@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 
@@ -56,6 +57,7 @@ func main() {
 	if host != "" {
 		config.HTTP.Host = host
 		config.RPC.Host = host
+		strings.Join([]string{config.Storage.DSN, "host=calendar"}, " ")
 	}
 	logg := logger.New(config.Logger.Level, os.Stdout)
 
@@ -63,10 +65,11 @@ func main() {
 	calendar := app.New(logg, storage)
 
 	if err := migrations.Up(config.Storage.DSN, "files"); err != nil {
-		log.Println()
+		log.Println(err.Error())
 		log.Println("Unable to up migration in \"files\"")
 	}
 	if err := migrations.Up(config.Storage.DSN, "inserting"); err != nil {
+		log.Println(err.Error())
 		log.Println("Unable to up migration in \"inserting\"")
 	}
 	// terr := migrations.Up("files")

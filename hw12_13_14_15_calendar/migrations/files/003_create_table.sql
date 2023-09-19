@@ -14,4 +14,4 @@ grant usage, select on all sequences in schema public to igor;
 grant usage, update on all sequences in schema public to igor;
 
 --+goose Down
-drop table if exists events;
+-- drop table if exists events;

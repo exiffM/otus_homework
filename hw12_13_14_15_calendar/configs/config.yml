@@ -9,4 +9,4 @@ rpc:
   port: 5000
 storage:
   type: database #local
-  dsn: "user=igor dbname=calendardb password=igor host=localhost" #"" #for local - empty
+  dsn: "user=igor dbname=calendardb password=igor" #"" #for local - empty

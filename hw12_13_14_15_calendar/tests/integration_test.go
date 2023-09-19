@@ -79,9 +79,10 @@ func (cs *CalendarSuite) SetupSuite() {
 }
 
 func (cs *CalendarSuite) SetupTest() {
+	dsn := "user=igor dbname=calendardb password=igor"
 	fmt.Println("Setup test")
-	migrations.Up("files")
-	migrations.Up("inserting")
+	migrations.Up(dsn, "files")
+	migrations.Up(dsn, "inserting")
 }
 
 // For this test in database should be events with exeed notification time
@@ -164,8 +165,9 @@ func (cs *CalendarSuite) TestSender() {
 }
 
 func (cs *CalendarSuite) TearDownTest() {
-	migrations.Down("inserting")
-	migrations.Down("files")
+	dsn := "user=igor dbname=calendardb password=igor"
+	migrations.Down(dsn, "inserting")
+	migrations.Down(dsn, "files")
 	fmt.Println("Tear Down test")
 }
 
