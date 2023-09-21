@@ -75,7 +75,7 @@ up:
 	docker compose -f deployments/docker-compose.yaml up --build
 
 down:
-	docker compose -f deployments/docker-compose.yaml down
+	docker compose -f deployments/docker-compose.yaml down --remove-orphans
 
 lint: install-lint-deps
 	golangci-lint -v run ./...

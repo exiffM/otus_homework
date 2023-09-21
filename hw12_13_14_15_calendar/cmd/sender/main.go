@@ -39,6 +39,11 @@ func main() {
 		log.Fatalf("Can't convert config to struct %v", err.Error())
 	}
 
+	host := os.Getenv("RABBIT_HOST")
+	if host != "" {
+		cfg.Source.ConnectionString = host
+	}
+
 	wg := sync.WaitGroup{}
 	onErrOnce := sync.Once{}
 	wg.Add(2)

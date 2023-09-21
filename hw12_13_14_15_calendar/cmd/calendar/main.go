@@ -57,24 +57,25 @@ func main() {
 	if host != "" {
 		config.HTTP.Host = host
 		config.RPC.Host = host
-		strings.Join([]string{config.Storage.DSN, "host=calendar"}, " ")
 	}
+	host = os.Getenv("DATABASE_HOST")
+	if host != "" {
+		config.Storage.DSN = strings.Join([]string{config.Storage.DSN, "host=" + host}, " ")
+	} else {
+		if err := migrations.Up(config.Storage.DSN, "files"); err != nil {
+			log.Println(err.Error())
+			log.Println("Unable to up migration in \"files\"")
+		}
+		if err := migrations.Up(config.Storage.DSN, "inserting"); err != nil {
+			log.Println(err.Error())
+			log.Println("Unable to up migration in \"inserting\"")
+		}
+	}
+
 	logg := logger.New(config.Logger.Level, os.Stdout)
 
 	storage := sqlstorage.New(config.Storage.DSN)
 	calendar := app.New(logg, storage)
-
-	if err := migrations.Up(config.Storage.DSN, "files"); err != nil {
-		log.Println(err.Error())
-		log.Println("Unable to up migration in \"files\"")
-	}
-	if err := migrations.Up(config.Storage.DSN, "inserting"); err != nil {
-		log.Println(err.Error())
-		log.Println("Unable to up migration in \"inserting\"")
-	}
-	// terr := migrations.Up("files")
-	// _ = terr
-	// terr = migrations.Up("preparedb")
 
 	server := internalhttp.NewServer(
 		config.HTTP.Host,

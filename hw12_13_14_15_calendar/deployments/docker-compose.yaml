@@ -5,46 +5,85 @@ services:
     container_name: rabbitmq
     image: rabbitmq:3-management
     ports:
+      - 5672:5672
       - 15672:15672
+    networks:
+      - calendar
+    
 
-  postgres:
+  postgresqldb:
     image: postgres:13.3
+    hostname: postgresqldb
     depends_on:
-      - rabbitmq
-    environment:
-      POSTGRES_DB: "calendardb"
-      POSTGRES_USER: "igor"
-      POSTGRES_PASSWORD: "igor"
+      rabbitmq:
+        condition: service_started
     ports:
-      - "5432:5432"
+      - 5432:5432
+    environment:
+      POSTGRES_DB: calendardb
+      POSTGRES_USER: igor
+      POSTGRES_PASSWORD: igorpwd
+      POSTGRES_PORT: 5432
+    networks:
+      - calendar
+  
+  goose:
+    build:
+      context: ../
+      dockerfile: ./migrations/Dockerfile
+    depends_on:
+      postgresqldb:
+        condition: service_started
+    container_name: goose
+    environment:
+      GOOSE_DRIVER: postgres
+      GOOSE_DBSTRING: postgres://igor:igorpwd@postgresqldb:5432/calendardb?sslmode=disable
+    networks:
+      - calendar    
 
   calendar:
     build:
       context: ../
       dockerfile: ./build/calendar/Dockerfile
     depends_on:
-      - postgres
+      goose:
+        condition: service_started
     ports: 
       - "5000:5000"
       - "1235:1235"
     container_name: calendar
     environment:
+      - DATABASE_HOST=postgresqldb
       - HOST=0.0.0.0
+    networks:
+      - calendar
 
-  # scheduler:
-  #   build:
-  #     context: ../
-  #     dockerfile: ./build/scheduler/Dockerfile
-  #   depends_on:
-  #     - calendar
-  #   container_name: scheduler
-  #   environment:
-  #     - CALENDAR_HOST=calendar
+  scheduler:
+    build:
+      context: ../
+      dockerfile: ./build/scheduler/Dockerfile
+    depends_on:
+      calendar:
+        condition: service_started
+    container_name: scheduler
+    environment:
+      - CALENDAR_HOST=calendar
+      - RABBIT_HOST=amqp://guest:guest@rabbitmq:15672/
+    networks:
+      - calendar
 
-  # sender:
-  #   build:
-  #     context: ./
-  #     dockerfile: ./build/sender/Dockerfile
-  #   depends_on:
-  #     - scheduler
-  #   container_name: sender
+  sender:
+    build:
+      context: ../
+      dockerfile: ./build/sender/Dockerfile
+    depends_on:
+      scheduler:
+        condition: service_started
+    container_name: sender
+    environment:
+      - RABBIT_HOST=amqp://guest:guest@rabbitmq:15672/
+    networks:
+      - calendar
+
+networks:
+  calendar:

@@ -53,6 +53,10 @@ func main() {
 		hp := strings.Split(cfg.Source.ConnectionString, ":")
 		cfg.Source.ConnectionString = strings.Join([]string{host, hp[1]}, ":")
 	}
+	host = os.Getenv("RABBIT_HOST")
+	if host != "" {
+		cfg.Target.ConnectionString = host
+	}
 	scheduler := scheduler.NewScheduler(*cfg)
 
 	go func() {

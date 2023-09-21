@@ -3,6 +3,7 @@ package migrations
 import (
 	"database/sql"
 	"embed"
+	"log"
 
 	_ "github.com/lib/pq" // comment for justifying
 	"github.com/pressly/goose/v3"
@@ -15,12 +16,14 @@ var embedMigrations embed.FS
 func Up(dsn, dir string) error {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
+		log.Println("In db open")
 		return err
 	}
 	goose.SetDialect("postgres")
 	goose.SetBaseFS(embedMigrations)
 
 	if err := goose.Up(db, dir); err != nil {
+		log.Println("In goose")
 		return err
 	}
 

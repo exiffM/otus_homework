@@ -1,12 +1,9 @@
 # Собираем в гошке
 FROM golang:1.20 as build
-
 ENV BIN_FILE /opt/calendar/calendar-app
 ENV CODE_DIR /go/src/
 
 WORKDIR ${CODE_DIR}
-COPY ./migrations/files /files
-COPY ./migrations/inserting /inserting
 # Кэшируем слои с модулями
 COPY go.mod .
 COPY go.sum .
@@ -32,8 +29,6 @@ LABEL MAINTAINERS="student@otus.ru"
 
 ENV BIN_FILE "/opt/calendar/calendar-app"
 COPY --from=build ${BIN_FILE} ${BIN_FILE}
-COPY --from=build /files /opt/calendar/files
-COPY --from=build /inserting /opt/calendar/inserting
 
 ENV CONFIG_FILE /etc/calendar/config.yml
 COPY ./configs/config.yml ${CONFIG_FILE}
