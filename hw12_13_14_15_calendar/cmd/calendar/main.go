@@ -58,6 +58,7 @@ func main() {
 		config.HTTP.Host = host
 		config.RPC.Host = host
 	}
+
 	host = os.Getenv("DATABASE_HOST")
 	if host != "" {
 		config.Storage.DSN = strings.Join([]string{config.Storage.DSN, "host=" + host}, " ")

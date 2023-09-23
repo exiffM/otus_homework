@@ -1,22 +1,10 @@
 version: "3.9"
 
 services:
-  rabbitmq:
-    container_name: rabbitmq
-    image: rabbitmq:3-management
-    ports:
-      - 5672:5672
-      - 15672:15672
-    networks:
-      - calendar
-    
-
   postgresqldb:
     image: postgres:13.3
+    container_name: postgres
     hostname: postgresqldb
-    depends_on:
-      rabbitmq:
-        condition: service_started
     ports:
       - 5432:5432
     environment:
@@ -26,18 +14,24 @@ services:
       POSTGRES_PORT: 5432
     networks:
       - calendar
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    depends_on:
+      - postgresqldb
+    ports:
+      - 5672:5672
+    networks:
+      - calendar
   
   goose:
     build:
       context: ../
       dockerfile: ./migrations/Dockerfile
     depends_on:
-      postgresqldb:
-        condition: service_started
-    container_name: goose
-    environment:
-      GOOSE_DRIVER: postgres
-      GOOSE_DBSTRING: postgres://igor:igorpwd@postgresqldb:5432/calendardb?sslmode=disable
+      - postgresqldb
+    command: sh -c './wait-for.sh postgresqldb:5432 -- goose postgres "postgres://igor:igorpwd@postgresqldb:5432/calendardb?sslmode=disable" up'
     networks:
       - calendar    
 
@@ -46,15 +40,15 @@ services:
       context: ../
       dockerfile: ./build/calendar/Dockerfile
     depends_on:
-      goose:
-        condition: service_started
+      - postgresqldb
+      - rabbitmq
     ports: 
-      - "5000:5000"
-      - "1235:1235"
+      - 5000:5000
+      - 1235:1235
     container_name: calendar
     environment:
       - DATABASE_HOST=postgresqldb
-      - HOST=0.0.0.0
+      - HOST=calendar
     networks:
       - calendar
 
@@ -63,12 +57,13 @@ services:
       context: ../
       dockerfile: ./build/scheduler/Dockerfile
     depends_on:
-      calendar:
-        condition: service_started
+      - calendar
+      - rabbitmq
+    command: sh -c './opt/scheduler/wait-for.sh rabbitmq:5672 -- ./opt/scheduler/scheduler-app -config /etc/scheduler/schedulercfg.yml' 
     container_name: scheduler
     environment:
       - CALENDAR_HOST=calendar
-      - RABBIT_HOST=amqp://guest:guest@rabbitmq:15672/
+      - RABBIT_HOST=amqp://guest:guest@rabbitmq:5672/
     networks:
       - calendar
 
@@ -79,9 +74,10 @@ services:
     depends_on:
       scheduler:
         condition: service_started
+    command: sh -c './opt/sender/wait-for.sh rabbitmq:5672 -- ./opt/sender/sender-app -config /etc/sender/sendercfg.yml' 
     container_name: sender
     environment:
-      - RABBIT_HOST=amqp://guest:guest@rabbitmq:15672/
+      - RABBIT_HOST=amqp://guest:guest@rabbitmq:5672/
     networks:
       - calendar
 

@@ -21,8 +21,10 @@ RUN CGO_ENABLED=0 go build \
         -o ${BIN_FILE} cmd/scheduler/*
 
 # На выходе тонкий образ alpine 3.9 <---
-FROM alpine:3.9
+FROM ubuntu:latest
 
+RUN apt-get update
+RUN apt-get install netcat -y
 LABEL ORGANIZATION="OTUS Online Education"
 LABEL SERVICE="calendar"
 LABEL MAINTAINERS="student@otus.ru"
@@ -32,5 +34,6 @@ COPY --from=build ${BIN_FILE} ${BIN_FILE}
 
 ENV CONFIG_FILE /etc/scheduler/schedulercfg.yml
 COPY ./configs/schedulercfg.yml ${CONFIG_FILE}
+COPY ./wait-for.sh /opt/scheduler
 
-CMD ${BIN_FILE} -config ${CONFIG_FILE}
+# CMD ${BIN_FILE} -config ${CONFIG_FILE}
